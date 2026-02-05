@@ -1,0 +1,35 @@
+name: sumber_sinar_emas
+description: Real estate mobile application for Sumber Sentuhan Emas (SSF)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.5.1
+  
+  # UI Components
+  carousel_slider: ^5.0.0
+  
+  # Icons (using Material Icons built-in, but can add more)
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # Assets will be added here when you provide images
+  # Uncomment and add your image paths:
+  assets:
+  - assets/images/hero/
+  - assets/images/projects/
+  - assets/icons/
