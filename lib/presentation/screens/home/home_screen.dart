@@ -41,8 +41,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: AppColors.primaryDarkGreen,
           child: Column(
             children: [
-              // Header
-              const AppHeader(),
+              // Header - only show for Home tab (index 0)
+              if (currentIndex == 0) const AppHeader(),
               // Content
               Expanded(
                 // Switch body based on selected bottom-nav index

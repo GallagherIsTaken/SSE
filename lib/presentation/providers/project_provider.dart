@@ -52,15 +52,22 @@ class ProjectNotifier extends StateNotifier<ProjectState> {
   Future<void> loadData() async {
     state = state.copyWith(isLoading: true);
 
-    // Simulate async loading (remove delay when connecting to real API)
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      // Fetch data from repository (Firebase or fallback)
+      final projects = await _repository.getProjects();
+      final features = await _repository.getFeatures();
+      final heroImages = await _repository.getHeroImages();
 
-    state = state.copyWith(
-      projects: _repository.getProjects(),
-      features: _repository.getFeatures(),
-      heroImages: _repository.getHeroImages(),
-      isLoading: false,
-    );
+      state = state.copyWith(
+        projects: projects,
+        features: features,
+        heroImages: heroImages,
+        isLoading: false,
+      );
+    } catch (e) {
+      print('Error loading data: $e');
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   List<ProjectModel> getFeaturedProjects() {

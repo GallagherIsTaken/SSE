@@ -36,45 +36,72 @@ class ProjectsTabContent extends ConsumerWidget {
         projects.isNotEmpty ? projects.first : _fallbackProject;
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title "Projects" with orange dot
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  AppStrings.projects,
-                  style: AppTextStyles.largeHeading(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Logo-only header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Image.asset(
+              'assets/icons/logo.png',
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback: Show app name if logo not found
+                return const Text(
+                  AppStrings.appName,
+                  style: TextStyle(
                     color: AppColors.textDarkGreen,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title "Projects" with orange dot - increased size
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppStrings.projects,
+                      style: AppTextStyles.extraLargeHeading(
+                        color: AppColors.textBlack,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: AppColors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40), // Increased spacing
+                // Highlight card; tap opens project detail
+                ProjectHighlightCard(
+                  project: highlightProject,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ProjectDetailScreen(project: highlightProject),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.orange,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+                // TODO: Add more project cards / list below as needed
               ],
             ),
-            const SizedBox(height: 24),
-            // Highlight card; tap opens project detail
-            ProjectHighlightCard(
-              project: highlightProject,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ProjectDetailScreen(project: highlightProject),
-                ),
-              ),
-            ),
-            // TODO: Add more project cards / list below as needed
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -89,4 +116,3 @@ class ProjectsTabContent extends ConsumerWidget {
         status: 'On Going Project',
       );
 }
-

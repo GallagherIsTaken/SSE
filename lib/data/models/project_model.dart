@@ -38,4 +38,33 @@ class ProjectModel {
       features: features ?? this.features,
     );
   }
+
+  /// Convert to JSON for Firebase
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'imageUrl': imageUrl,
+      'isFeatured': isFeatured,
+      'status': status,
+      'features': features,
+    };
+  }
+
+  /// Create from Firebase JSON
+  factory ProjectModel.fromJson(Map<String, dynamic> json) {
+    return ProjectModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String? ?? '',
+      isFeatured: json['isFeatured'] as bool? ?? false,
+      status: json['status'] as String? ?? 'On Going Project',
+      features: (json['features'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+    );
+  }
 }

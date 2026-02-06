@@ -5,6 +5,19 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._(); // Private constructor
 
+  // Extra Large Headings (for main page titles)
+  static TextStyle extraLargeHeading({
+    Color? color,
+    FontWeight? weight,
+  }) {
+    return TextStyle(
+      fontSize: 40,
+      fontWeight: weight ?? FontWeight.bold,
+      color: color ?? AppColors.textDarkGreen,
+      height: 1.2,
+    );
+  }
+
   // Large Headings
   static TextStyle largeHeading({
     Color? color,

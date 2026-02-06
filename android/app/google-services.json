@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "100077315251",
+    "project_id": "sumbersentuhanemas-9b281",
+    "storage_bucket": "sumbersentuhanemas-9b281.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100077315251:android:3460f2cb22e422755f7cc6",
+        "android_client_info": {
+          "package_name": "com.example.sumber_sinar_emas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu87kQJDkwGVVRt6rZVM60DpJXEtVfEuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

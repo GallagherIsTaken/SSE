@@ -18,7 +18,8 @@ class AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100, // Increased height to match design - adjust this value to change header height
+      height:
+          100, // Increased height to match design - adjust this value to change header height
       decoration: const BoxDecoration(
         // Header color stays as primary per design
         color: AppColors.primaryDarkGreen, // #013235
@@ -47,7 +48,8 @@ class AppHeader extends StatelessWidget {
                   return const Text(
                     AppStrings.appName,
                     style: TextStyle(
-                      color: AppColors.textWhite, // Pure white for fallback text
+                      color:
+                          AppColors.textWhite, // Pure white for fallback text
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -59,16 +61,17 @@ class AppHeader extends StatelessWidget {
               const Text(
                 AppStrings.appName,
                 style: TextStyle(
-                  color: AppColors.textWhite, // Pure white for text on dark header
+                  color:
+                      AppColors.textWhite, // Pure white for text on dark header
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          
+
           const Spacer(),
-          
+
           // Right: Action icons
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -76,7 +79,8 @@ class AppHeader extends StatelessWidget {
               IconButton(
                 icon: const Icon(
                   Icons.mail_outline,
-                  color: AppColors.textWhite, // Pure white for icons on dark header
+                  color: AppColors
+                      .textWhite, // Pure white for icons on dark header
                 ),
                 onPressed: onMailTap ?? () {},
                 tooltip: 'Mail',
@@ -84,10 +88,21 @@ class AppHeader extends StatelessWidget {
               IconButton(
                 icon: const Icon(
                   Icons.person_outline,
-                  color: AppColors.textWhite, // Pure white for icons on dark header
+                  color: AppColors
+                      .textWhite, // Pure white for icons on dark header
                 ),
                 onPressed: onProfileTap ?? () {},
                 tooltip: 'Profile',
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.admin_panel_settings,
+                  color: AppColors.textWhite,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/admin/login');
+                },
+                tooltip: 'Admin Panel',
               ),
             ],
           ),

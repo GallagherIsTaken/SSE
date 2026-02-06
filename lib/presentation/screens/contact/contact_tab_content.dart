@@ -11,39 +11,70 @@ class ContactTabContent extends StatelessWidget {
   static const List<({String name, String message})> _marketing = [
     (name: 'Wawan', message: 'Kamar mandi ada tiga kak'),
     (name: 'Regita', message: 'You : Untuk kamar mandi nya ada berapa ya?'),
-    (name: 'Andika', message: 'Untuk Cendrawasih Residence masih ada 4 unit kak'),
+    (
+      name: 'Andika',
+      message: 'Untuk Cendrawasih Residence masih ada 4 unit kak'
+    ),
     (name: 'Elsya', message: 'You : Kenapa?'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTitle(),
-            const SizedBox(height: 8),
-            Text(
-              'Marketing Kami',
-              style: AppTextStyles.sectionHeading(color: AppColors.textDarkGreen),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Logo-only header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Image.asset(
+              'assets/icons/logo.png',
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback: Show app name if logo not found
+                return const Text(
+                  AppStrings.appName,
+                  style: TextStyle(
+                    color: AppColors.textDarkGreen,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 16),
-            ..._marketing.map((m) => _buildMarketingCard(m.name, m.message)),
-            const SizedBox(height: 24),
-            _buildOrangeDivider(),
-            const SizedBox(height: 16),
-            _buildOfficeHours(),
-            const SizedBox(height: 8),
-            _buildPhone(),
-            const SizedBox(height: 8),
-            _buildInstagram(),
-            const SizedBox(height: 16),
-            _buildMapPlaceholder(),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTitle(),
+                const SizedBox(height: 40), // Increased spacing
+                Text(
+                  'Marketing Kami',
+                  style:
+                      AppTextStyles.sectionHeading(color: AppColors.textBlack),
+                ),
+                const SizedBox(height: 16),
+                ..._marketing
+                    .map((m) => _buildMarketingCard(m.name, m.message)),
+                const SizedBox(height: 24),
+                _buildOrangeDivider(),
+                const SizedBox(height: 16),
+                _buildOfficeHours(),
+                const SizedBox(height: 8),
+                _buildPhone(),
+                const SizedBox(height: 8),
+                _buildInstagram(),
+                const SizedBox(height: 16),
+                _buildMapPlaceholder(),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -54,12 +85,12 @@ class ContactTabContent extends StatelessWidget {
       children: [
         Text(
           AppStrings.contact,
-          style: AppTextStyles.largeHeading(color: AppColors.textDarkGreen),
+          style: AppTextStyles.extraLargeHeading(color: AppColors.textBlack),
         ),
         const SizedBox(width: 8),
         Container(
-          width: 8,
-          height: 8,
+          width: 10,
+          height: 10,
           decoration: const BoxDecoration(
             color: AppColors.orange,
             shape: BoxShape.circle,
@@ -96,7 +127,8 @@ class ContactTabContent extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   message,
-                  style: AppTextStyles.small(color: AppColors.textWhite.withOpacity(0.85)),
+                  style: AppTextStyles.small(
+                      color: AppColors.textWhite.withOpacity(0.85)),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -153,7 +185,8 @@ class ContactTabContent extends StatelessWidget {
         Expanded(
           child: Text(
             'Monday - Friday, 09.00 WITA - 18.00 WITA',
-            style: AppTextStyles.bodyText(color: AppColors.textBlack, fontSize: 14),
+            style: AppTextStyles.bodyText(
+                color: AppColors.textBlack, fontSize: 14),
           ),
         ),
       ],
@@ -168,7 +201,8 @@ class ContactTabContent extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           '0411-361-5377 | 0411-363-5158',
-          style: AppTextStyles.bodyText(color: AppColors.textBlack, fontSize: 14),
+          style:
+              AppTextStyles.bodyText(color: AppColors.textBlack, fontSize: 14),
         ),
       ],
     );
@@ -178,11 +212,13 @@ class ContactTabContent extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.camera_alt_outlined, size: 20, color: AppColors.textDarkGreen),
+        Icon(Icons.camera_alt_outlined,
+            size: 20, color: AppColors.textDarkGreen),
         const SizedBox(width: 8),
         Text(
           '@sumbersentuhanemas.official',
-          style: AppTextStyles.bodyText(color: AppColors.textBlack, fontSize: 14),
+          style:
+              AppTextStyles.bodyText(color: AppColors.textBlack, fontSize: 14),
         ),
       ],
     );

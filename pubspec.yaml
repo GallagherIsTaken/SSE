@@ -13,6 +13,13 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.5.1
   
+  # Firebase
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  
+  # Image Loading & Caching
+  cached_network_image: ^3.4.1
+  
   # UI Components
   carousel_slider: ^5.0.0
   
