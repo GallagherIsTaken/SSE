@@ -8,6 +8,7 @@ import '../../../data/models/project_model.dart';
 /// This is a more detailed, marketing-style card than the home list cards.
 class ProjectHighlightCard extends StatelessWidget {
   final ProjectModel project;
+
   /// When set, tapping the card (outside the action buttons) opens the project detail.
   final VoidCallback? onTap;
 
@@ -64,22 +65,7 @@ class ProjectHighlightCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              project.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.lightGray,
-                  child: const Center(
-                    child: Icon(
-                      Icons.home,
-                      size: 72,
-                      color: AppColors.darkGray,
-                    ),
-                  ),
-                );
-              },
-            ),
+            _buildImageWidget(),
             // Simple page indicator mimic (static for now)
             Positioned(
               bottom: 8,
@@ -109,6 +95,63 @@ class ProjectHighlightCard extends StatelessWidget {
     );
   }
 
+  Widget _buildImageWidget() {
+    // Check if it's a network URL or asset path
+    final isNetworkImage = project.imageUrl.startsWith('http://') ||
+        project.imageUrl.startsWith('https://');
+
+    if (isNetworkImage) {
+      return Image.network(
+        project.imageUrl,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: AppColors.lightGray,
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                color: AppColors.orange,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.lightGray,
+            child: const Center(
+              child: Icon(
+                Icons.home,
+                size: 72,
+                color: AppColors.darkGray,
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        project.imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.lightGray,
+            child: const Center(
+              child: Icon(
+                Icons.home,
+                size: 72,
+                color: AppColors.darkGray,
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
   Widget _buildOrangeDivider() {
     return Container(
       height: 4,
@@ -125,7 +168,8 @@ class ProjectHighlightCard extends StatelessWidget {
           // Top meta line
           Text(
             'Rumah Tahap 1  •  Sisa 4 unit',
-            style: AppTextStyles.small(color: AppColors.textWhite.withOpacity(0.9)),
+            style: AppTextStyles.small(
+                color: AppColors.textWhite.withOpacity(0.9)),
           ),
           const SizedBox(height: 8),
           // Price line
@@ -262,4 +306,3 @@ class ProjectHighlightCard extends StatelessWidget {
     );
   }
 }
-

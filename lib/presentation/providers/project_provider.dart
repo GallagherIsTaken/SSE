@@ -2,12 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/project_repository.dart';
 import '../../../data/models/project_model.dart';
 import '../../../data/models/feature_model.dart';
+import '../../../data/models/hero_image_model.dart';
 
 /// Holds project-related state
 class ProjectState {
   final List<ProjectModel> projects;
   final List<FeatureModel> features;
-  final List<String> heroImages;
+  final List<HeroImageModel> heroImages;
   final bool isLoading;
 
   const ProjectState({
@@ -20,7 +21,7 @@ class ProjectState {
   ProjectState copyWith({
     List<ProjectModel>? projects,
     List<FeatureModel>? features,
-    List<String>? heroImages,
+    List<HeroImageModel>? heroImages,
     bool? isLoading,
   }) {
     return ProjectState(

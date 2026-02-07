@@ -21,6 +21,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _previousIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +35,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(navigationProvider);
+
+    // Reload data when navigating to home (0) or projects (1) tab
+    if ((currentIndex == 0 || currentIndex == 1) &&
+        _previousIndex != currentIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(projectProvider.notifier).loadData();
+      });
+    }
+    _previousIndex = currentIndex;
 
     return Scaffold(
       body: SafeArea(

@@ -1,5 +1,6 @@
 import '../models/project_model.dart';
 import '../models/feature_model.dart';
+import '../models/hero_image_model.dart';
 import '../services/firebase_service.dart';
 import 'package:flutter/material.dart';
 
@@ -11,28 +12,23 @@ class ProjectRepository {
   // Cache for offline support
   List<ProjectModel>? _cachedProjects;
   List<FeatureModel>? _cachedFeatures;
-  List<String>? _cachedHeroImages;
-
-  // Mock hero carousel images (fallback)
-  static const List<String> _mockHeroImages = [
-    'assets/images/hero/SSEH.png',
-    'assets/images/hero/SSEH.png',
-  ];
+  List<HeroImageModel>? _cachedHeroImages;
 
   /// Get hero carousel images
-  Future<List<String>> getHeroImages() async {
-    try {
-      final images = await _firebaseService.getHeroImages();
-      if (images.isNotEmpty) {
-        _cachedHeroImages = images;
-        return images;
-      }
-    } catch (e) {
-      print('Error fetching hero images from Firebase: $e');
+  Future<List<HeroImageModel>> getHeroImages() async {
+    if (_cachedHeroImages != null) {
+      return _cachedHeroImages!;
     }
 
-    // Return cached data or fallback to mock data
-    return _cachedHeroImages ?? _mockHeroImages;
+    try {
+      final images = await _firebaseService.getHeroImages();
+      _cachedHeroImages = images;
+      return images;
+    } catch (e) {
+      print('Error fetching hero images, using mock data: $e');
+      // Return empty list as fallback since we don't have mock HeroImageModel data
+      return [];
+    }
   }
 
   /// Get all features for hero banner
@@ -80,6 +76,74 @@ class ProjectRepository {
   /// Stream of hero images (real-time updates)
   Stream<List<String>> heroImagesStream() {
     return _firebaseService.heroImagesStream();
+  }
+
+  // Admin CRUD methods
+
+  /// Save a project (create or update)
+  Future<void> saveProject(ProjectModel project) async {
+    try {
+      await _firebaseService.saveProject(project);
+      _cachedProjects = null; // Invalidate cache
+    } catch (e) {
+      print('Error saving project: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a project
+  Future<void> deleteProject(String projectId) async {
+    try {
+      await _firebaseService.deleteProject(projectId);
+      _cachedProjects = null; // Invalidate cache
+    } catch (e) {
+      print('Error deleting project: $e');
+      rethrow;
+    }
+  }
+
+  /// Save a feature (create or update)
+  Future<void> saveFeature(FeatureModel feature) async {
+    try {
+      await _firebaseService.saveFeature(feature);
+      _cachedFeatures = null; // Invalidate cache
+    } catch (e) {
+      print('Error saving feature: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a feature
+  Future<void> deleteFeature(String featureId) async {
+    try {
+      await _firebaseService.deleteFeature(featureId);
+      _cachedFeatures = null; // Invalidate cache
+    } catch (e) {
+      print('Error deleting feature: $e');
+      rethrow;
+    }
+  }
+
+  /// Add a hero image
+  Future<void> addHeroImage(String imageUrl) async {
+    try {
+      await _firebaseService.addHeroImage(imageUrl);
+      _cachedHeroImages = null; // Invalidate cache
+    } catch (e) {
+      print('Error adding hero image: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a hero image
+  Future<void> deleteHeroImage(String docId) async {
+    try {
+      await _firebaseService.deleteHeroImage(docId);
+      _cachedHeroImages = null; // Invalidate cache
+    } catch (e) {
+      print('Error deleting hero image: $e');
+      rethrow;
+    }
   }
 
   // Mock data fallbacks

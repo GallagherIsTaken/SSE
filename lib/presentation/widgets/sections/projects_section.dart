@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../providers/project_provider.dart';
+import '../../providers/navigation_provider.dart';
 import '../../widgets/home/project_card.dart';
 
 /// "Our Projects" section
@@ -42,12 +43,10 @@ class ProjectsSection extends ConsumerWidget {
               return ProjectCard(
                 project: project,
                 onSeeMoreTap: () {
-                  // TODO: Navigate to project detail screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Opening ${project.name}...'),
-                    ),
-                  );
+                  // Navigate to Projects tab and select this project
+                  ref
+                      .read(navigationProvider.notifier)
+                      .navigateToProject(project.id);
                 },
               );
             }).toList(),

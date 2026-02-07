@@ -34,10 +34,17 @@ class _HeroCarouselState extends ConsumerState<HeroCarousel> {
         CarouselSlider.builder(
           itemCount: heroImages.length,
           itemBuilder: (context, index, realIndex) {
-            return _buildCarouselItem(heroImages[index]);
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(heroImages[index].imageUrl),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
           },
           options: CarouselOptions(
-            // Height adjusted to fit the hero image better
             height: MediaQuery.of(context).size.height * 0.20,
             viewportFraction: 1.0,
             autoPlay: true,
@@ -61,6 +68,7 @@ class _HeroCarouselState extends ConsumerState<HeroCarousel> {
     );
   }
 
+  // Kept for potential future use with asset images
   Widget _buildCarouselItem(String imagePath) {
     return Container(
       width: double.infinity,

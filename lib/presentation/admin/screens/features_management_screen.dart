@@ -38,7 +38,26 @@ class _FeaturesManagementScreenState extends State<FeaturesManagementScreen> {
   void _showEditDialog({FeatureModel? feature}) {
     showDialog(
       context: context,
-      builder: (context) => _FeatureEditDialog(feature: feature),
+      builder: (context) => _FeatureEditDialog(
+        feature: feature,
+        onSave: (newFeature) async {
+          try {
+            await _repository.saveFeature(newFeature);
+            await _loadFeatures();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Feature saved successfully')),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error saving feature: $e')),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 
@@ -93,8 +112,54 @@ class _FeaturesManagementScreenState extends State<FeaturesManagementScreen> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                // TODO: Delete feature
+                              onPressed: () async {
+                                // Show confirmation dialog
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Delete Feature'),
+                                    content: Text(
+                                        'Are you sure you want to delete "${feature.name}"?'),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('Cancel'),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                      ),
+                                      TextButton(
+                                        child: const Text('Delete',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirmed == true) {
+                                  try {
+                                    await _repository.deleteFeature(feature.id);
+                                    await _loadFeatures();
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Feature deleted successfully')),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Error deleting feature: $e')),
+                                      );
+                                    }
+                                  }
+                                }
                               },
                             ),
                           ],
@@ -111,8 +176,9 @@ class _FeaturesManagementScreenState extends State<FeaturesManagementScreen> {
 
 class _FeatureEditDialog extends StatefulWidget {
   final FeatureModel? feature;
+  final Function(FeatureModel) onSave;
 
-  const _FeatureEditDialog({this.feature});
+  const _FeatureEditDialog({this.feature, required this.onSave});
 
   @override
   State<_FeatureEditDialog> createState() => _FeatureEditDialogState();
@@ -212,8 +278,16 @@ class _FeatureEditDialogState extends State<_FeatureEditDialog> {
         ElevatedButton(
           child: const Text('Save'),
           onPressed: () {
-            // TODO: Save feature
-            Navigator.of(context).pop();
+            if (_nameController.text.isNotEmpty) {
+              final newFeature = FeatureModel(
+                id: widget.feature?.id ??
+                    DateTime.now().millisecondsSinceEpoch.toString(),
+                name: _nameController.text,
+                icon: _selectedIcon,
+              );
+              widget.onSave(newFeature);
+              Navigator.of(context).pop();
+            }
           },
         ),
       ],

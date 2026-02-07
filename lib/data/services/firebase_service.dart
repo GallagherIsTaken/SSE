@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/project_model.dart';
 import '../models/feature_model.dart';
+import '../models/hero_image_model.dart';
 
 /// Firebase service for managing app data
 /// Uses Firestore for data storage and external URLs for images
@@ -49,8 +50,8 @@ class FirebaseService {
     }
   }
 
-  /// Get hero carousel image URLs from Firestore
-  Future<List<String>> getHeroImages() async {
+  /// Get hero carousel images from Firestore
+  Future<List<HeroImageModel>> getHeroImages() async {
     try {
       final snapshot = await _firestore
           .collection(_heroImagesCollection)
@@ -58,8 +59,7 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => doc.data()['imageUrl'] as String? ?? '')
-          .where((url) => url.isNotEmpty)
+          .map((doc) => HeroImageModel.fromJson(doc.data(), doc.id))
           .toList();
     } catch (e) {
       print('Error fetching hero images: $e');
@@ -158,12 +158,24 @@ class FirebaseService {
   // Upload images to your preferred service and use the public URLs
   // in the imageUrl fields when creating/updating projects and hero images
 
-  /// Add hero image with external URL
-  Future<void> addHeroImage(String imageUrl, int order) async {
+  /// Add hero image with external URL (auto-calculates order)
+  Future<void> addHeroImage(String imageUrl) async {
     try {
+      // Get current max order
+      final snapshot = await _firestore
+          .collection(_heroImagesCollection)
+          .orderBy('order', descending: true)
+          .limit(1)
+          .get();
+
+      int nextOrder = 0;
+      if (snapshot.docs.isNotEmpty) {
+        nextOrder = (snapshot.docs.first.data()['order'] as int? ?? -1) + 1;
+      }
+
       await _firestore.collection(_heroImagesCollection).add({
         'imageUrl': imageUrl,
-        'order': order,
+        'order': nextOrder,
       });
     } catch (e) {
       print('Error adding hero image: $e');

@@ -23,6 +23,9 @@ dependencies:
   # UI Components
   carousel_slider: ^5.0.0
   
+  # Environment Variables
+  flutter_dotenv: ^5.1.0
+  
   # Icons (using Material Icons built-in, but can add more)
   cupertino_icons: ^1.0.6
 
@@ -40,3 +43,4 @@ flutter:
   - assets/images/hero/
   - assets/images/projects/
   - assets/icons/
+  - .env

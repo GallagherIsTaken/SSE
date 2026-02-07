@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../data/models/project_model.dart';
 import '../../providers/project_provider.dart';
+import '../../providers/navigation_provider.dart';
 import '../project_detail/project_detail_screen.dart';
 import '../../widgets/projects/project_highlight_card.dart';
 
@@ -25,17 +26,67 @@ class ProjectsScreen extends ConsumerWidget {
 }
 
 /// Reusable content widget for the Projects tab/body.
-class ProjectsTabContent extends ConsumerWidget {
+class ProjectsTabContent extends ConsumerStatefulWidget {
   const ProjectsTabContent({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProjectsTabContent> createState() => _ProjectsTabContentState();
+}
+
+class _ProjectsTabContentState extends ConsumerState<ProjectsTabContent> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _projectKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Scroll to selected project after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedProject();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelectedProject() {
+    final selectedId = ref.read(navigationProvider.notifier).selectedProjectId;
+    if (selectedId != null && _projectKeys.containsKey(selectedId)) {
+      final key = _projectKeys[selectedId]!;
+      final context = key.currentContext;
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          alignment: 0.1, // Scroll to near top
+        );
+      }
+      // Clear selection after scrolling
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          ref.read(navigationProvider.notifier).clearSelectedProject();
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final projectState = ref.watch(projectProvider);
     final projects = projectState.projects;
-    final highlightProject =
-        projects.isNotEmpty ? projects.first : _fallbackProject;
+    final selectedId = ref.watch(navigationProvider.notifier).selectedProjectId;
+
+    // Create keys for each project
+    for (var project in projects) {
+      _projectKeys.putIfAbsent(project.id, () => GlobalKey());
+    }
 
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -86,33 +137,51 @@ class ProjectsTabContent extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 40), // Increased spacing
-                // Highlight card; tap opens project detail
-                ProjectHighlightCard(
-                  project: highlightProject,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ProjectDetailScreen(project: highlightProject),
+                const SizedBox(height: 40),
+
+                // Show all projects
+                if (projects.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Text(
+                        'No projects available',
+                        style: TextStyle(color: AppColors.darkGray),
+                      ),
                     ),
-                  ),
-                ),
-                // TODO: Add more project cards / list below as needed
+                  )
+                else
+                  ...projects.map((project) {
+                    final isSelected = project.id == selectedId;
+                    return Container(
+                      key: _projectKeys[project.id],
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: isSelected
+                          ? BoxDecoration(
+                              border: Border.all(
+                                color: AppColors.orange,
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            )
+                          : null,
+                      child: ProjectHighlightCard(
+                        project: project,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ProjectDetailScreen(project: project),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
               ],
             ),
           ),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
-
-  // Fallback project data in case provider has not loaded yet.
-  ProjectModel get _fallbackProject => ProjectModel(
-        id: 'fallback',
-        name: 'Golden Cendrawasih Residence',
-        description: 'Perumahan modern di Tamalate, Kota Makassar.',
-        imageUrl: 'assets/images/hero/SSEH.png',
-        isFeatured: true,
-        status: 'On Going Project',
-      );
 }

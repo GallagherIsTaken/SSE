@@ -58,40 +58,89 @@ class ProjectCard extends StatelessWidget {
   }
 
   Widget _buildProjectImage() {
+    // Check if it's a network URL or asset path
+    final isNetworkImage = project.imageUrl.startsWith('http://') ||
+        project.imageUrl.startsWith('https://');
+
     return SizedBox(
       width: double.infinity,
       height: 200,
-      child: Image.asset(
-        project.imageUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Placeholder if image not found
-          return Container(
-            color: AppColors.lightGray,
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.home,
-                    size: 60,
-                    color: AppColors.darkGray,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Project Image\nPlaceholder',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.darkGray,
-                      fontSize: 12,
+      child: isNetworkImage
+          ? Image.network(
+              project.imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: AppColors.lightGray,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: AppColors.orange,
                     ),
                   ),
-                ],
-              ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: AppColors.lightGray,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.home,
+                          size: 60,
+                          color: AppColors.darkGray,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Project Image\nPlaceholder',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.darkGray,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )
+          : Image.asset(
+              project.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: AppColors.lightGray,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.home,
+                          size: 60,
+                          color: AppColors.darkGray,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Project Image\nPlaceholder',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.darkGray,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 

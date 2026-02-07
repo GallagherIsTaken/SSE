@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../data/models/project_model.dart';
-import '../../../../data/repositories/project_repository.dart';
-import '../../providers/project_provider.dart'; // Fixed import path
+import '../../../core/constants/app_colors.dart';
+import '../../../data/models/project_model.dart';
+import '../../../data/repositories/project_repository.dart';
+import '../../providers/project_provider.dart';
 import '../widgets/admin_image_picker.dart';
 
 class ProjectsManagementScreen extends ConsumerStatefulWidget {
@@ -23,100 +23,217 @@ class _ProjectsManagementScreenState
     final projectsAsync = ref.watch(projectProvider);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Manage Projects'),
+        title: const Text('Projects Management'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.grey[900],
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey[200],
+            height: 1,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primaryDarkGreen,
         foregroundColor: Colors.white,
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.orange,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Project'),
         onPressed: () => _showEditDialog(context),
       ),
-      body: projectsAsync.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: projectsAsync.projects.length,
-              itemBuilder: (context, index) {
-                final project = projectsAsync.projects[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    leading: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
-                        image: project.imageUrl.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(project.imageUrl),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+      body: Container(
+        color: Colors.grey[50],
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Manage Projects',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Add, edit, or remove projects from your portfolio',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Expanded(
+                child: projectsAsync.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: projectsAsync.projects.length,
+                        itemBuilder: (context, index) {
+                          final project = projectsAsync.projects[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16),
+                              leading: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                  image: project.imageUrl.isNotEmpty
+                                      ? DecorationImage(
+                                          image: NetworkImage(project.imageUrl),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: project.imageUrl.isEmpty
+                                    ? Icon(Icons.image,
+                                        color: Colors.grey[400], size: 32)
+                                    : null,
+                              ),
+                              title: Text(
+                                project.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: project.status == 'On Going Project'
+                                        ? Colors.orange.withOpacity(0.1)
+                                        : Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    project.status,
+                                    style: TextStyle(
+                                      color:
+                                          project.status == 'On Going Project'
+                                              ? Colors.orange[700]
+                                              : Colors.green[700],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      project.isFeatured
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: project.isFeatured
+                                          ? Colors.orange
+                                          : Colors.grey,
+                                    ),
+                                    onPressed: () async {
+                                      try {
+                                        await _repository.saveProject(
+                                          project.copyWith(
+                                              isFeatured: !project.isFeatured),
+                                        );
+                                        ref
+                                            .read(projectProvider.notifier)
+                                            .loadData();
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(project.isFeatured
+                                                  ? 'Removed from featured'
+                                                  : 'Added to featured'),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    'Error updating project: $e')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () =>
+                                        _showEditDialog(context, project),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () =>
+                                        _showDeleteDialog(context, project),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      child: project.imageUrl.isEmpty
-                          ? const Icon(Icons.image, color: Colors.grey)
-                          : null,
-                    ),
-                    title: Text(project.name),
-                    subtitle: Text(
-                      project.status,
-                      style: TextStyle(
-                        color: project.status == 'On Going Project'
-                            ? Colors.orange
-                            : Colors.green,
-                      ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            project.isFeatured ? Icons.star : Icons.star_border,
-                            color: project.isFeatured
-                                ? Colors.orange
-                                : Colors.grey,
-                          ),
-                          onPressed: () async {
-                            // Toggle featured status
-                            final updated = project.copyWith(
-                                isFeatured: !project.isFeatured);
-                            // TODO: Add save method to repository if not exists in mock
-                            // For now assuming we have a way to save or rebuild provider
-                            // _repository.saveProject(updated);
-                            // ref.read(projectProvider.notifier).loadData();
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () =>
-                              _showEditDialog(context, project: project),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _showDeleteDialog(context, project),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  void _showEditDialog(BuildContext context, {ProjectModel? project}) {
+  void _showEditDialog(BuildContext context, [ProjectModel? project]) {
     showDialog(
       context: context,
       builder: (context) => _ProjectEditDialog(
-          project: project,
-          onSave: (model) async {
-            // TODO: Implement save logic calling _repository
-            // await _repository.saveProject(model);
-            // ref.read(projectProvider.notifier).loadData();
-          }),
+        project: project,
+        onSave: (model) async {
+          try {
+            await _repository.saveProject(model);
+            ref.read(projectProvider.notifier).loadData();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Project saved successfully')),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error saving project: $e')),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 
@@ -134,10 +251,24 @@ class _ProjectsManagementScreenState
           TextButton(
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
             onPressed: () async {
-              // Call delete API
-              // await _repository.deleteProject(project.id);
-              // ref.read(projectProvider.notifier).loadData();
-              Navigator.of(context).pop();
+              try {
+                await _repository.deleteProject(project.id);
+                ref.read(projectProvider.notifier).loadData();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Project deleted successfully')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting project: $e')),
+                  );
+                }
+              }
             },
           ),
         ],
