@@ -1,12 +1,41 @@
+import 'unit_type_model.dart';
+import 'nearby_location_model.dart';
+
 /// Project model representing a real estate project
 class ProjectModel {
   final String id;
   final String name;
   final String description;
-  final String imageUrl; // Placeholder path - replace with your image path
+  final String imageUrl; // Main project image
   final bool isFeatured;
   final String status; // e.g., "On Going Project"
   final List<String> features;
+
+  // Price & Property Details
+  final double? priceMin; // Minimum price in Juta (millions)
+  final double? priceMax; // Maximum price in M (billions)
+  final int? bedrooms; // Number of bedrooms (KT)
+  final double? landArea; // Land area (LT) in m²
+  final double? buildingArea; // Building area (LB) in m²
+  final String? certificateType; // HGB, SHM, etc.
+  final String? developerName;
+
+  // Location Information
+  final String? fullAddress;
+  final String? district; // Kecamatan
+  final String? city;
+  final String? province;
+  final double? latitude;
+  final double? longitude;
+
+  // Advertisement Image
+  final String? adImageUrl;
+
+  // Nearby Locations
+  final List<NearbyLocationModel> nearbyLocations;
+
+  // Unit Types
+  final List<UnitTypeModel> unitTypes;
 
   ProjectModel({
     required this.id,
@@ -16,6 +45,22 @@ class ProjectModel {
     this.isFeatured = false,
     this.status = 'On Going Project',
     this.features = const [],
+    this.priceMin,
+    this.priceMax,
+    this.bedrooms,
+    this.landArea,
+    this.buildingArea,
+    this.certificateType,
+    this.developerName,
+    this.fullAddress,
+    this.district,
+    this.city,
+    this.province,
+    this.latitude,
+    this.longitude,
+    this.adImageUrl,
+    this.nearbyLocations = const [],
+    this.unitTypes = const [],
   });
 
   /// Create a copy with updated fields
@@ -27,6 +72,22 @@ class ProjectModel {
     bool? isFeatured,
     String? status,
     List<String>? features,
+    double? priceMin,
+    double? priceMax,
+    int? bedrooms,
+    double? landArea,
+    double? buildingArea,
+    String? certificateType,
+    String? developerName,
+    String? fullAddress,
+    String? district,
+    String? city,
+    String? province,
+    double? latitude,
+    double? longitude,
+    String? adImageUrl,
+    List<NearbyLocationModel>? nearbyLocations,
+    List<UnitTypeModel>? unitTypes,
   }) {
     return ProjectModel(
       id: id ?? this.id,
@@ -36,6 +97,22 @@ class ProjectModel {
       isFeatured: isFeatured ?? this.isFeatured,
       status: status ?? this.status,
       features: features ?? this.features,
+      priceMin: priceMin ?? this.priceMin,
+      priceMax: priceMax ?? this.priceMax,
+      bedrooms: bedrooms ?? this.bedrooms,
+      landArea: landArea ?? this.landArea,
+      buildingArea: buildingArea ?? this.buildingArea,
+      certificateType: certificateType ?? this.certificateType,
+      developerName: developerName ?? this.developerName,
+      fullAddress: fullAddress ?? this.fullAddress,
+      district: district ?? this.district,
+      city: city ?? this.city,
+      province: province ?? this.province,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      adImageUrl: adImageUrl ?? this.adImageUrl,
+      nearbyLocations: nearbyLocations ?? this.nearbyLocations,
+      unitTypes: unitTypes ?? this.unitTypes,
     );
   }
 
@@ -49,6 +126,22 @@ class ProjectModel {
       'isFeatured': isFeatured,
       'status': status,
       'features': features,
+      'priceMin': priceMin,
+      'priceMax': priceMax,
+      'bedrooms': bedrooms,
+      'landArea': landArea,
+      'buildingArea': buildingArea,
+      'certificateType': certificateType,
+      'developerName': developerName,
+      'fullAddress': fullAddress,
+      'district': district,
+      'city': city,
+      'province': province,
+      'latitude': latitude,
+      'longitude': longitude,
+      'adImageUrl': adImageUrl,
+      'nearbyLocations': nearbyLocations.map((e) => e.toJson()).toList(),
+      'unitTypes': unitTypes.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -65,6 +158,31 @@ class ProjectModel {
               ?.map((e) => e as String)
               .toList() ??
           [],
+      priceMin: (json['priceMin'] as num?)?.toDouble(),
+      priceMax: (json['priceMax'] as num?)?.toDouble(),
+      bedrooms: json['bedrooms'] as int?,
+      landArea: (json['landArea'] as num?)?.toDouble(),
+      buildingArea: (json['buildingArea'] as num?)?.toDouble(),
+      certificateType: json['certificateType'] as String?,
+      developerName: json['developerName'] as String?,
+      fullAddress: json['fullAddress'] as String?,
+      district: json['district'] as String?,
+      city: json['city'] as String?,
+      province: json['province'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      adImageUrl: json['adImageUrl'] as String?,
+      nearbyLocations: json['nearbyLocations'] != null
+          ? (json['nearbyLocations'] as List<dynamic>)
+              .map((e) =>
+                  NearbyLocationModel.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : [],
+      unitTypes: json['unitTypes'] != null
+          ? (json['unitTypes'] as List<dynamic>)
+              .map((e) => UnitTypeModel.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 }
