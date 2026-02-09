@@ -18,9 +18,22 @@ class ProjectDetailScreen extends StatefulWidget {
 }
 
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
-  /// 0 = Type 138, 1 = Type 105
   int _selectedUnitTypeIndex = 0;
   int _selectedLocationFilterIndex = 0;
+  int _currentImageIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,22 +111,105 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildMainImage() {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Image.asset(
-        widget.project.imageUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+    // Get all images: gallery images + main image + ad image
+    final List<String> allImages = [
+      ...widget.project.imageGallery,
+      if (widget.project.imageGallery.isEmpty) widget.project.imageUrl,
+      if (widget.project.adImageUrl != null &&
+          widget.project.adImageUrl!.isNotEmpty)
+        widget.project.adImageUrl!,
+    ];
+
+    if (allImages.isEmpty) {
+      return AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Container(
           color: AppColors.lightGray,
           child: const Center(
             child: Icon(Icons.home, size: 72, color: AppColors.darkGray),
           ),
         ),
-      ),
+      );
+    }
+
+    return Stack(
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: allImages.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final imageUrl = allImages[index];
+              return Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppColors.lightGray,
+                  child: const Center(
+                    child:
+                        Icon(Icons.home, size: 72, color: AppColors.darkGray),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (allImages.length > 1)
+          Positioned(
+            bottom: 12,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                allImages.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentImageIndex == index
+                        ? AppColors.orange
+                        : AppColors.white.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildPriceAndInfoSection() {
+    // Format price range
+    String priceText = 'Price not available';
+    if (widget.project.priceMin != null && widget.project.priceMax != null) {
+      priceText =
+          'Rp${widget.project.priceMin!.toStringAsFixed(1)} Jt - Rp${widget.project.priceMax!.toStringAsFixed(1)} M';
+    } else if (widget.project.priceMin != null) {
+      priceText = 'From Rp${widget.project.priceMin!.toStringAsFixed(1)} Jt';
+    }
+
+    // Format property details
+    final List<String> details = [];
+    if (widget.project.bedrooms != null)
+      details.add('${widget.project.bedrooms} KT');
+    if (widget.project.landArea != null)
+      details.add('LT ${widget.project.landArea!.toStringAsFixed(0)} m²');
+    if (widget.project.buildingArea != null)
+      details.add('LB ${widget.project.buildingArea!.toStringAsFixed(0)} m²');
+    if (widget.project.certificateType != null)
+      details.add(widget.project.certificateType!);
+    final detailsText =
+        details.isNotEmpty ? details.join('   •   ') : 'Details not available';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -122,7 +218,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Rp406,1 Jt - Rp1,1 M',
+            priceText,
             style: AppTextStyles.projectName(),
           ),
           const SizedBox(height: 12),
@@ -131,94 +227,93 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColors.white,
-                    child: Text(
-                      'G',
-                      style: TextStyle(
-                        color: AppColors.primaryDarkGreen,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.project.name,
-                    style: AppTextStyles.bodyText(
-                      color: AppColors.textWhite,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'by PT Sumber Sentuhan Emas',
-                    style: AppTextStyles.small(
-                      color: AppColors.textWhite.withOpacity(0.85),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Kec. Tamalate, Sulawesi Selatan',
-                    style: AppTextStyles.small(
-                      color: AppColors.textWhite.withOpacity(0.85),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '4 KT   •   LT 100 m²   •   LB 105-138 m²   •   HGB',
-                    style: AppTextStyles.small(
-                      color: AppColors.textWhite.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              // Promo badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade700,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Profile Picture
+                    widget.project.profileImageUrl != null &&
+                            widget.project.profileImageUrl!.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 20,
+                            backgroundImage:
+                                NetworkImage(widget.project.profileImageUrl!),
+                            backgroundColor: AppColors.white,
+                          )
+                        : CircleAvatar(
+                            radius: 20,
+                            backgroundColor: AppColors.white,
+                            child: Text(
+                              widget.project.name.isNotEmpty
+                                  ? widget.project.name[0].toUpperCase()
+                                  : 'G',
+                              style: const TextStyle(
+                                color: AppColors.primaryDarkGreen,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                    const SizedBox(height: 12),
                     Text(
-                      'PROMO 17 AN\n(BATU TUJUAN)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
+                      widget.project.name,
+                      style: AppTextStyles.bodyText(
                         color: AppColors.textWhite,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'CASH BACK\nUP TO 300 JT',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                      'by ${widget.project.developerName ?? "PT Sumber Sentuhan Emas"}',
+                      style: AppTextStyles.small(
+                        color: AppColors.textWhite.withOpacity(0.85),
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      'FREE',
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      widget.project.district != null &&
+                              widget.project.province != null
+                          ? '${widget.project.district}, ${widget.project.province}'
+                          : widget.project.fullAddress ??
+                              'Location not specified',
+                      style: AppTextStyles.small(
+                        color: AppColors.textWhite.withOpacity(0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      detailsText,
+                      style: AppTextStyles.small(
+                        color: AppColors.textWhite.withOpacity(0.9),
                       ),
                     ),
                   ],
                 ),
               ),
+              // Advertisement Image
+              if (widget.project.adImageUrl != null &&
+                  widget.project.adImageUrl!.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(left: 16),
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.orange, width: 2),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      widget.project.adImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppColors.lightGray,
+                        child:
+                            const Icon(Icons.image, color: AppColors.darkGray),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ],
@@ -242,11 +337,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.location_on, color: AppColors.textWhite, size: 20),
+              const Icon(Icons.location_on,
+                  color: AppColors.textWhite, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Jl. Cendrawasih No 89, Tamalate, Makassar, Sulawesi Selatan',
+                  widget.project.fullAddress ?? 'Address not specified',
                   style: AppTextStyles.bodyText(
                     color: AppColors.textWhite.withOpacity(0.95),
                     fontSize: 14,
@@ -260,7 +356,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ['Pusat Perbelanjaan', 'Pendidikan', 'Kesehatan', 'Transportasi']
+              children: [
+                'Pusat Perbelanjaan',
+                'Pendidikan',
+                'Kesehatan',
+                'Transportasi'
+              ]
                   .asMap()
                   .entries
                   .map((e) => Padding(
@@ -268,10 +369,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         child: FilterChip(
                           label: Text(
                             e.value,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textWhite),
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.textWhite),
                           ),
                           selected: _selectedLocationFilterIndex == e.key,
-                          onSelected: (_) => setState(() => _selectedLocationFilterIndex = e.key),
+                          onSelected: (_) => setState(
+                              () => _selectedLocationFilterIndex = e.key),
                           selectedColor: AppColors.orange,
                           backgroundColor: AppColors.primaryDarkGreen,
                           side: BorderSide(
@@ -293,13 +396,45 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Icon(Icons.map_outlined, size: 48, color: AppColors.textWhite.withOpacity(0.5)),
+              child: Icon(Icons.map_outlined,
+                  size: 48, color: AppColors.textWhite.withOpacity(0.5)),
             ),
           ),
           const SizedBox(height: 12),
-          _buildNearbyItem('Alfamidi Cendrawasih 2', '1.7 KM'),
-          _buildNearbyItem('Trans Studio Mall', '10 MENIT'),
-          _buildNearbyItem('RS Hermina', '5 MENIT'),
+          // Nearby locations filtered by category
+          ...() {
+            final categoryMap = {
+              0: 'Pusat Perbelanjaan',
+              1: 'Pendidikan',
+              2: 'Kesehatan',
+              3: 'Transportasi',
+            };
+            final selectedCategory =
+                categoryMap[_selectedLocationFilterIndex] ??
+                    'Pusat Perbelanjaan';
+            final filteredLocations = widget.project.nearbyLocations
+                .where((loc) => loc.category == selectedCategory)
+                .toList();
+
+            if (filteredLocations.isEmpty) {
+              return [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'No locations in this category',
+                    style: AppTextStyles.small(
+                      color: AppColors.textWhite.withOpacity(0.6),
+                    ),
+                  ),
+                ),
+              ];
+            }
+
+            return filteredLocations
+                .map((loc) => _buildNearbyItem(
+                    loc.name, '${loc.distance} ${loc.distanceUnit}'))
+                .toList();
+          }(),
         ],
       ),
     );
@@ -331,7 +466,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Widget _buildDetailActions() {
     const btnPadding = EdgeInsets.symmetric(vertical: 12);
-    const btnShape = RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8)));
+    const btnShape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)));
     const btnMinSize = Size(0, 48);
 
     return Row(
@@ -381,6 +517,48 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildUnitTypeSection() {
+    final unitTypes = widget.project.unitTypes;
+
+    if (unitTypes.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        color: AppColors.primaryDarkGreen,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pilihan Tipe Unit',
+              style: AppTextStyles.sectionHeading(color: AppColors.textWhite),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  'No unit types available',
+                  style: AppTextStyles.small(
+                    color: AppColors.textWhite.withOpacity(0.6),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Ensure selected index is valid
+    if (_selectedUnitTypeIndex >= unitTypes.length) {
+      _selectedUnitTypeIndex = 0;
+    }
+
+    final selectedUnit = unitTypes[_selectedUnitTypeIndex];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -393,61 +571,100 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             style: AppTextStyles.sectionHeading(color: AppColors.textWhite),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              _buildUnitTypeChip('Type 138', 0),
-              const SizedBox(width: 12),
-              _buildUnitTypeChip('Type 105', 1),
-            ],
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: List.generate(
+              unitTypes.length,
+              (index) => _buildUnitTypeChip(unitTypes[index].name, index),
+            ),
           ),
           const SizedBox(height: 16),
+          // Large image at top
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: widget.project.imageUrl.startsWith('http')
+                  ? Image.network(
+                      widget.project.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppColors.lightGray,
+                        child: const Icon(Icons.home,
+                            size: 72, color: AppColors.darkGray),
+                      ),
+                    )
+                  : Image.asset(
+                      widget.project.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppColors.lightGray,
+                        child: const Icon(Icons.home,
+                            size: 72, color: AppColors.darkGray),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // White card with price and specs
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.white.withOpacity(0.12),
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    widget.project.imageUrl,
-                    width: 100,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 100,
-                      height: 80,
-                      color: AppColors.lightGray,
-                      child: const Icon(Icons.home, color: AppColors.darkGray),
-                    ),
+                Text(
+                  'Rp${selectedUnit.price.toStringAsFixed(0)} Jt',
+                  style: const TextStyle(
+                    color: AppColors.primaryDarkGreen,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _selectedUnitTypeIndex == 0 ? 'Rp401 Jt' : 'Rp350 Jt',
-                        style: AppTextStyles.projectName(color: AppColors.textWhite),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildSpecRow('Luas Tanah', '104 m²'),
-                      _buildSpecRow('Luas Bangunan', '138 m²'),
-                      _buildSpecRow('Kamar Tidur', '3'),
-                      _buildSpecRow('Kamar Mandi', '2'),
-                      _buildSpecRow('Jumlah Lantai', '2'),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 16),
+                _buildSpecRowDark('Luas Tanah',
+                    '${selectedUnit.landArea.toStringAsFixed(0)}M^2'),
+                const SizedBox(height: 8),
+                _buildSpecRowDark('Luas Bangunan',
+                    '${selectedUnit.buildingArea.toStringAsFixed(0)}M^2'),
+                const SizedBox(height: 8),
+                _buildSpecRowDark('Kamar Tidur', '${selectedUnit.bedrooms}'),
+                const SizedBox(height: 8),
+                _buildSpecRowDark('Kamar Mandi', '${selectedUnit.bathrooms}'),
+                const SizedBox(height: 8),
+                _buildSpecRowDark('Jumlah Lantai', '${selectedUnit.floors}'),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSpecRowDark(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textBlack,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: AppColors.textBlack,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -487,7 +704,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         children: [
           Text(
             label,
-            style: AppTextStyles.small(color: AppColors.textWhite.withOpacity(0.85)),
+            style: AppTextStyles.small(
+                color: AppColors.textWhite.withOpacity(0.85)),
           ),
           Text(
             value,
@@ -506,93 +724,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryDarkGreen,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.map, size: 48, color: AppColors.textWhite.withOpacity(0.5)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 120,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade800,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Site Plan',
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.project.name,
-                      style: TextStyle(
-                        color: AppColors.textWhite.withOpacity(0.9),
-                        fontSize: 10,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Keterangan:',
-                      style: TextStyle(
-                        color: AppColors.textWhite.withOpacity(0.9),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    _buildLegendItem('Kuning: Open For Sale'),
-                    _buildLegendItem('Biru: Rumah Contoh'),
-                    _buildLegendItem('Merah: Booked'),
-                    _buildLegendItem('Hijau: Sold'),
-                    const SizedBox(height: 12),
-                    Text(
-                      'www.sumbersentuhanemas.com',
-                      style: TextStyle(
-                        color: AppColors.textWhite.withOpacity(0.8),
-                        fontSize: 9,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.secondaryDarkGreen,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Icon(Icons.map,
+                  size: 48, color: AppColors.textWhite.withOpacity(0.5)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: AppColors.textWhite.withOpacity(0.85),
-          fontSize: 9,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSpecsAndFacilitiesSection() {
+    final facilities = widget.project.features;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -607,23 +757,40 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.info_outline, size: 16, color: AppColors.textWhite.withOpacity(0.6)),
+              Icon(Icons.info_outline,
+                  size: 16, color: AppColors.textWhite.withOpacity(0.6)),
               const SizedBox(width: 6),
               Text(
                 'Fasilitas bisa berbeda tiap cluster',
-                style: AppTextStyles.small(color: AppColors.textWhite.withOpacity(0.6)),
+                style: AppTextStyles.small(
+                    color: AppColors.textWhite.withOpacity(0.6)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: List.generate(
-              6,
-              (_) => _buildFacilityChip('Keamanan 24 jam'),
+          if (facilities.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryDarkGreen,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  'No facilities added yet',
+                  style: AppTextStyles.small(
+                      color: AppColors.textWhite.withOpacity(0.6)),
+                ),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: facilities
+                  .map((facility) => _buildFacilityChip(facility))
+                  .toList(),
             ),
-          ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -632,12 +799,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               icon: const Icon(Icons.chat, color: AppColors.orange, size: 20),
               label: const Text(
                 'Tanya Detail Fasilitas',
-                style: TextStyle(color: AppColors.orange, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: AppColors.orange, fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.orange),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),
@@ -658,13 +827,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               border: Border.all(color: AppColors.textWhite.withOpacity(0.5)),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.check_circle, color: AppColors.orange, size: 28),
+            child: const Icon(Icons.check_circle,
+                color: AppColors.orange, size: 28),
           ),
           const SizedBox(height: 6),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: AppTextStyles.small(color: AppColors.textWhite).copyWith(fontSize: 11),
+            style: AppTextStyles.small(color: AppColors.textWhite)
+                .copyWith(fontSize: 11),
           ),
         ],
       ),
