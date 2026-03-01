@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Sumber Sinar Emas</title>
+    <meta name="description" content="Admin dashboard for managing Sumber Sinar Emas real estate content.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="layout">
+
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                </div>
+                <span class="sidebar-title">Sumber Sinar Emas</span>
+                <span class="sidebar-subtitle">Admin Panel</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-panel="overview" id="nav-overview">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                    Overview
+                </div>
+                <div class="nav-item" data-panel="hero-images" id="nav-hero-images">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    Hero Images
+                </div>
+                <div class="nav-item" data-panel="projects" id="nav-projects">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                    </svg>
+                    Projects
+                </div>
+                <div class="nav-item" data-panel="contacts" id="nav-contacts">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                    </svg>
+                    Contacts
+                </div>
+                <hr class="nav-divider">
+                <div class="nav-item danger" id="nav-logout">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    Logout
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+            <!-- Topbar -->
+            <header class="topbar">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+                <span class="topbar-title" id="topbar-title">Overview</span>
+                <div class="topbar-user">
+                    <span id="user-email" style="font-size:13px;color:#6b7280"></span>
+                    <div class="avatar" id="user-avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Content area -->
+            <main class="content-area">
+
+                <!-- ── Overview Panel ── -->
+                <section class="panel active" id="panel-overview">
+                    <div class="page-header">
+                        <div>
+                            <h2>Welcome, Admin 👋</h2>
+                            <p>Manage your real estate content from one place.</p>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card grad-blue">
+                            <div class="stat-card-icon">
+                                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white"
+                                    stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                                </svg>
+                            </div>
+                            <div class="stat-card-value" id="stat-projects">—</div>
+                            <div class="stat-card-label">Total Projects</div>
+                        </div>
+                        <div class="stat-card grad-orange">
+                            <div class="stat-card-icon">
+                                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white"
+                                    stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                            </div>
+                            <div class="stat-card-value" id="stat-hero">—</div>
+                            <div class="stat-card-label">Hero Images</div>
+                        </div>
+                        <div class="stat-card grad-green">
+                            <div class="stat-card-icon">
+                                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white"
+                                    stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                </svg>
+                            </div>
+                            <div class="stat-card-value" id="stat-contacts">—</div>
+                            <div class="stat-card-label">Contacts</div>
+                        </div>
+                    </div>
+                    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:var(--shadow-sm)">
+                        <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;color:#374151">Quick Links</h3>
+                        <p style="font-size:13px;color:#9ca3af;margin-bottom:16px">Jump to a section to start editing
+                        </p>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap">
+                            <button class="btn btn-add" onclick="navigate('hero-images')">Upload Hero Image</button>
+                            <button class="btn btn-edit" onclick="navigate('projects')"
+                                style="background:#EFF6FF;color:#2563EB">Manage Projects</button>
+                            <button class="btn btn-secondary" onclick="navigate('contacts')">Edit Contacts</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── Hero Images Panel ── -->
+                <section class="panel" id="panel-hero-images">
+                    <div class="page-header">
+                        <div>
+                            <h2>Hero Images</h2>
+                            <p>Manage the carousel images shown on the home screen.</p>
+                        </div>
+                        <button class="btn btn-add" id="hero-add-url">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                            Add by URL
+                        </button>
+                    </div>
+
+                    <!-- Upload zone -->
+                    <div class="upload-zone" id="hero-dropzone" style="margin-bottom:24px">
+                        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="1.5" style="margin:0 auto;color:#9ca3af">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <p>Click or drag & drop images here</p>
+                        <p class="upload-hint">PNG, JPG, WebP — uploaded to Firebase Storage</p>
+                        <input type="file" id="hero-file-input" multiple accept="image/*" style="display:none">
+                    </div>
+
+                    <!-- Image grid -->
+                    <div class="image-grid" id="hero-grid">
+                        <div class="empty-state" style="grid-column:1/-1">
+                            <p style="color:#9ca3af">Loading…</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── Projects Panel ── -->
+                <section class="panel" id="panel-projects">
+                    <div class="page-header">
+                        <div>
+                            <h2>Projects</h2>
+                            <p>Add, edit, and manage real estate projects.</p>
+                        </div>
+                        <button class="btn btn-add" id="btn-add-project">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Add Project
+                        </button>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-toolbar">
+                            <div class="search-input">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="project-search" placeholder="Search by name or city…">
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:60px">Image</th>
+                                        <th>Name</th>
+                                        <th>City</th>
+                                        <th>Price Range</th>
+                                        <th>Status</th>
+                                        <th style="width:160px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projects-tbody">
+                                    <tr class="loading-row">
+                                        <td colspan="6">Loading projects…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── Contacts Panel ── -->
+                <section class="panel" id="panel-contacts">
+                    <div class="page-header">
+                        <div>
+                            <h2>Contacts</h2>
+                            <p>Manage marketing agent contacts and WhatsApp links.</p>
+                        </div>
+                        <button class="btn btn-add" id="btn-add-contact">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Add Contact
+                        </button>
+                    </div>
+
+                    <div class="table-card">
+                        <div style="overflow-x:auto">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:52px">Photo</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>WhatsApp</th>
+                                        <th style="width:160px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contacts-tbody">
+                                    <tr class="loading-row">
+                                        <td colspan="5">Loading contacts…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ══ Project Modal ══════════════════════════════════════ -->
+    <div class="modal-overlay" id="project-modal">
+        <div class="modal" style="max-width:800px">
+            <div class="modal-header">
+                <h3 id="modal-project-title">Add Project</h3>
+                <button class="modal-close" id="project-modal-close" aria-label="Close">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="field-grid">
+                    <!-- Basic Info -->
+                    <div class="field-section">Basic Information</div>
+                    <div class="field full">
+                        <label>Project Name *</label>
+                        <input type="text" id="proj-name" placeholder="e.g. Grand Residence">
+                    </div>
+                    <div class="field full">
+                        <label>Description</label>
+                        <textarea id="proj-description" rows="3"
+                            placeholder="Brief description of the project…"></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Status</label>
+                        <select id="proj-status">
+                            <option value="On Going Project">On Going Project</option>
+                            <option value="Upcoming Project">Upcoming Project</option>
+                            <option value="Completed Project">Completed Project</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Subtitle</label>
+                        <input type="text" id="proj-subtitle" placeholder="e.g. Rumah Tahap 1">
+                    </div>
+                    <div class="field">
+                        <label>Developer Name</label>
+                        <input type="text" id="proj-developerName" placeholder="Developer or builder name">
+                    </div>
+                    <div class="field">
+                        <label>Certificate Type</label>
+                        <select id="proj-certificateType">
+                            <option value="">— Select —</option>
+                            <option value="SHM">SHM (Sertifikat Hak Milik)</option>
+                            <option value="HGB">HGB (Hak Guna Bangunan)</option>
+                            <option value="Strata">Strata</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="field-section">Main Image</div>
+                    <div class="field full" style="display:flex;gap:10px;align-items:flex-end">
+                        <div style="flex:1">
+                            <label>Image URL</label>
+                            <input type="url" id="proj-imageUrl" placeholder="https://…">
+                        </div>
+                        <div>
+                            <label>Or upload</label>
+                            <label class="btn btn-upload" id="proj-upload-btn" style="cursor:pointer;margin-bottom:0">
+                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                </svg>
+                                Upload Image
+                                <input type="file" id="project-image-input" accept="image/*" style="display:none">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Pricing -->
+                    <div class="field-section">Pricing & Details</div>
+                    <div class="field">
+                        <label>Min Price (Juta)</label>
+                        <input type="number" id="proj-priceMin" placeholder="e.g. 400">
+                    </div>
+                    <div class="field">
+                        <label>Max Price (Juta)</label>
+                        <input type="number" id="proj-priceMax" placeholder="e.g. 900">
+                    </div>
+                    <div class="field">
+                        <label>Bedrooms</label>
+                        <input type="number" id="proj-bedrooms" placeholder="e.g. 3">
+                    </div>
+                    <div class="field">
+                        <label>Land Area (m²)</label>
+                        <input type="number" id="proj-landArea" placeholder="e.g. 120">
+                    </div>
+                    <div class="field">
+                        <label>Building Area (m²)</label>
+                        <input type="number" id="proj-buildingArea" placeholder="e.g. 90">
+                    </div>
+                    <div class="field">
+                        <label>Stock Remaining</label>
+                        <input type="number" id="proj-stockRemaining" placeholder="e.g. 4">
+                    </div>
+                    <div class="field">
+                        <label>Installment Start (Juta/bln)</label>
+                        <input type="number" step="0.01" id="proj-installmentStarting" placeholder="e.g. 3.29">
+                    </div>
+                    <div class="field">
+                        <label>Brochure URL</label>
+                        <input type="url" id="proj-brochureUrl" placeholder="https://…">
+                    </div>
+
+                    <!-- Location -->
+                    <div class="field-section">Location</div>
+                    <div class="field full">
+                        <label>Full Address</label>
+                        <input type="text" id="proj-fullAddress" placeholder="Full street address">
+                    </div>
+                    <div class="field">
+                        <label>District (Kecamatan)</label>
+                        <input type="text" id="proj-district" placeholder="e.g. Medan Johor">
+                    </div>
+                    <div class="field">
+                        <label>City</label>
+                        <input type="text" id="proj-city" placeholder="e.g. Medan">
+                    </div>
+                    <div class="field">
+                        <label>Province</label>
+                        <input type="text" id="proj-province" placeholder="e.g. Sumatera Utara">
+                    </div>
+                    <div class="field">
+                        <label>Latitude</label>
+                        <input type="number" step="any" id="proj-latitude" placeholder="e.g. 3.597">
+                    </div>
+                    <div class="field">
+                        <label>Longitude</label>
+                        <input type="number" step="any" id="proj-longitude" placeholder="e.g. 98.673">
+                    </div>
+
+                    <!-- Features -->
+                    <div class="field-section">Features & Settings</div>
+                    <div class="field full">
+                        <label>Features (press Enter to add)</label>
+                        <div class="tags-input-area" id="feature-tags-wrapper">
+                            <span id="feature-tags-container"></span>
+                            <input class="tags-input" type="text" id="feature-tag-input"
+                                placeholder="e.g. Swimming Pool…">
+                        </div>
+                    </div>
+                    <div class="field full">
+                        <div class="toggle-field">
+                            <input type="checkbox" id="proj-isFeatured">
+                            <label for="proj-isFeatured">Featured project (shown prominently in app)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="project-cancel">Cancel</button>
+                <button class="btn btn-save" id="project-save">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Contact Modal ══════════════════════════════════════ -->
+    <div class="modal-overlay" id="contact-modal">
+        <div class="modal" style="max-width:520px">
+            <div class="modal-header">
+                <h3 id="contact-modal-title">Add Contact</h3>
+                <button class="modal-close" id="contact-modal-close" aria-label="Close">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="field-grid">
+                    <div class="field full">
+                        <label>Name *</label>
+                        <input type="text" id="ct-name" placeholder="Agent name">
+                    </div>
+                    <div class="field full">
+                        <label>Description / Title</label>
+                        <input type="text" id="ct-description" placeholder="e.g. Marketing Specialist">
+                    </div>
+                    <div class="field full">
+                        <label>Profile Picture URL</label>
+                        <input type="url" id="ct-profilePictureUrl" placeholder="https://…">
+                    </div>
+                    <div class="field full">
+                        <label>WhatsApp Link / Number</label>
+                        <input type="text" id="ct-whatsappLink"
+                            placeholder="e.g. https://wa.me/628123456789 or +628123456789">
+                    </div>
+                    <div class="field">
+                        <label>Display Order</label>
+                        <input type="number" id="ct-order" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="contact-cancel">Cancel</button>
+                <button class="btn btn-save" id="contact-save">Save Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { requireAuth, logout, getUserInitial, getUserEmail } from './js/auth.js';
+        import { initProjects } from './js/projects.js';
+        import { initHeroImages } from './js/hero-images.js';
+        import { initContacts } from './js/contacts.js';
+
+        // Auth guard
+        const user = await requireAuth();
+        document.getElementById('user-avatar').textContent = getUserInitial();
+        document.getElementById('user-email').textContent = getUserEmail();
+
+        // Navigation
+        const panels = document.querySelectorAll('.panel');
+        const navItems = document.querySelectorAll('.nav-item[data-panel]');
+        const topbarTitle = document.getElementById('topbar-title');
+        const panelTitles = {
+            overview: 'Overview',
+            'hero-images': 'Hero Images',
+            projects: 'Projects',
+            contacts: 'Contacts',
+        };
+
+        window.navigate = function (panelId) {
+            panels.forEach(p => p.classList.remove('active'));
+            navItems.forEach(n => n.classList.remove('active'));
+            const target = document.getElementById(`panel-${panelId}`);
+            if (target) target.classList.add('active');
+            const navEl = document.getElementById(`nav-${panelId}`);
+            if (navEl) navEl.classList.add('active');
+            topbarTitle.textContent = panelTitles[panelId] || panelId;
+            closeSidebar();
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => navigate(item.dataset.panel));
+        });
+
+        document.getElementById('nav-logout').addEventListener('click', async () => {
+            if (confirm('Sign out of admin panel?')) await logout();
+        });
+
+        // Mobile sidebar
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        }
+        overlay.addEventListener('click', closeSidebar);
+
+        // Init all panels
+        initProjects();
+        initHeroImages();
+        initContacts();
+    </script>
+</body>
+
+</html>

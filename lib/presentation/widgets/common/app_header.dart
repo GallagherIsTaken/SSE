@@ -69,20 +69,6 @@ class AppHeader extends StatelessWidget {
               ),
             ],
           ),
-
-          const Spacer(),
-
-          // Right: Action icon
-          IconButton(
-            icon: const Icon(
-              Icons.admin_panel_settings,
-              color: AppColors.textWhite,
-            ),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/admin/login');
-            },
-            tooltip: 'Admin Panel',
-          ),
         ],
       ),
     );

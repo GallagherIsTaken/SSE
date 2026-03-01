@@ -1,24 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/screens/home/home_screen.dart';
-import 'presentation/admin/screens/admin_login_screen.dart';
-import 'presentation/admin/screens/admin_dashboard_screen.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load environment variables
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    print('Error loading .env file: $e');
-    // App will continue but admin login may not work
-  }
 
   // Initialize Firebase
   try {
@@ -44,10 +34,6 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       // Temporarily showing MigrationScreen. Change back to HomeScreen() after migration.
       home: const HomeScreen(),
-      routes: {
-        '/admin/login': (context) => const AdminLoginScreen(),
-        '/admin/dashboard': (context) => const AdminDashboardScreen(),
-      },
     );
   }
 }
