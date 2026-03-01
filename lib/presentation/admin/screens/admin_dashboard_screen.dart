@@ -3,7 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 
 import 'projects_management_screen.dart';
 import 'hero_images_management_screen.dart';
-import 'features_management_screen.dart';
+import 'contacts_management_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -19,109 +19,217 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     const _DashboardOverview(),
     const HeroImagesManagementScreen(),
     const ProjectsManagementScreen(),
-    const FeaturesManagementScreen(),
+    const ContactsManagementScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
-      body: Row(
-        children: [
-          // Sidebar
-          Container(
-            width: 260,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(2, 0),
+      appBar: isMobile
+          ? AppBar(
+              title: const Text('Admin Panel'),
+              backgroundColor: AppColors.primaryDarkGreen,
+              foregroundColor: Colors.white,
+            )
+          : null,
+      drawer: isMobile ? _buildDrawer() : null,
+      body: isMobile
+          ? _screens[_selectedIndex]
+          : Row(
+              children: [
+                // Sidebar for desktop
+                _buildSidebar(),
+                // Main Content
+                Expanded(
+                  child: _screens[_selectedIndex],
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryDarkGreen,
-                        AppColors.primaryDarkGreen.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primaryDarkGreen,
+                  AppColors.primaryDarkGreen.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            width: double.infinity,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Icon(Icons.admin_panel_settings,
+                      size: 48, color: Colors.white),
+                  SizedBox(height: 16),
+                  Text(
+                    'Admin Panel',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  width: double.infinity,
-                  child: const Column(
-                    children: [
-                      Icon(Icons.admin_panel_settings,
-                          size: 48, color: Colors.white),
-                      SizedBox(height: 16),
-                      Text(
-                        'Admin Panel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _SidebarItem(
+                  icon: Icons.dashboard,
+                  title: 'Overview',
+                  isSelected: _selectedIndex == 0,
+                  onTap: () {
+                    setState(() => _selectedIndex = 0);
+                    Navigator.pop(context); // Close drawer
+                  },
                 ),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    children: [
-                      _SidebarItem(
-                        icon: Icons.dashboard,
-                        title: 'Overview',
-                        isSelected: _selectedIndex == 0,
-                        onTap: () => setState(() => _selectedIndex = 0),
-                      ),
-                      _SidebarItem(
-                        icon: Icons.image,
-                        title: 'Hero Images',
-                        isSelected: _selectedIndex == 1,
-                        onTap: () => setState(() => _selectedIndex = 1),
-                      ),
-                      _SidebarItem(
-                        icon: Icons.apartment,
-                        title: 'Projects',
-                        isSelected: _selectedIndex == 2,
-                        onTap: () => setState(() => _selectedIndex = 2),
-                      ),
-                      _SidebarItem(
-                        icon: Icons.featured_play_list,
-                        title: 'Features',
-                        isSelected: _selectedIndex == 3,
-                        onTap: () => setState(() => _selectedIndex = 3),
-                      ),
-                      const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Divider(),
-                      ),
-                      _SidebarItem(
-                        icon: Icons.logout,
-                        title: 'Logout',
-                        isSelected: false,
-                        onTap: () {
-                          Navigator.of(context)
-                              .pushReplacementNamed('/admin/login');
-                        },
-                      ),
-                    ],
+                _SidebarItem(
+                  icon: Icons.image,
+                  title: 'Hero Images',
+                  isSelected: _selectedIndex == 1,
+                  onTap: () {
+                    setState(() => _selectedIndex = 1);
+                    Navigator.pop(context);
+                  },
+                ),
+                _SidebarItem(
+                  icon: Icons.apartment,
+                  title: 'Projects',
+                  isSelected: _selectedIndex == 2,
+                  onTap: () {
+                    setState(() => _selectedIndex = 2);
+                    Navigator.pop(context);
+                  },
+                ),
+                _SidebarItem(
+                  icon: Icons.contacts,
+                  title: 'Contacts',
+                  isSelected: _selectedIndex == 3,
+                  onTap: () {
+                    setState(() => _selectedIndex = 3);
+                    Navigator.pop(context);
+                  },
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Divider(),
+                ),
+                _SidebarItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.of(context).pushReplacementNamed('/admin/login');
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebar() {
+    return Container(
+      width: 260,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(2, 0),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primaryDarkGreen,
+                  AppColors.primaryDarkGreen.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            width: double.infinity,
+            child: const Column(
+              children: [
+                Icon(Icons.admin_panel_settings, size: 48, color: Colors.white),
+                SizedBox(height: 16),
+                Text(
+                  'Admin Panel',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-          // Main Content
           Expanded(
-            child: _screens[_selectedIndex],
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _SidebarItem(
+                  icon: Icons.dashboard,
+                  title: 'Overview',
+                  isSelected: _selectedIndex == 0,
+                  onTap: () => setState(() => _selectedIndex = 0),
+                ),
+                _SidebarItem(
+                  icon: Icons.image,
+                  title: 'Hero Images',
+                  isSelected: _selectedIndex == 1,
+                  onTap: () => setState(() => _selectedIndex = 1),
+                ),
+                _SidebarItem(
+                  icon: Icons.apartment,
+                  title: 'Projects',
+                  isSelected: _selectedIndex == 2,
+                  onTap: () => setState(() => _selectedIndex = 2),
+                ),
+                _SidebarItem(
+                  icon: Icons.contacts,
+                  title: 'Contacts',
+                  isSelected: _selectedIndex == 3,
+                  onTap: () => setState(() => _selectedIndex = 3),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Divider(),
+                ),
+                _SidebarItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.of(context).pushReplacementNamed('/admin/login');
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),

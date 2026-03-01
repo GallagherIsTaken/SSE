@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../data/models/project_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Highlight card for a single project on the Projects page.
 /// This is a more detailed, marketing-style card than the home list cards.
@@ -165,40 +166,54 @@ class ProjectHighlightCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top meta line
-          Text(
-            'Rumah Tahap 1  •  Sisa 4 unit',
-            style: AppTextStyles.small(
-                color: AppColors.textWhite.withOpacity(0.9)),
-          ),
-          const SizedBox(height: 8),
-          // Price line
-          Text(
-            'Rp406,1 Jt - Rp1,1 M',
-            style: AppTextStyles.projectName(),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Angsuran mulai dari Rp3,29 Juta/bln',
-            style: AppTextStyles.bodyText(
-              color: AppColors.orange,
-              fontSize: 14,
+          // Top meta line - subtitle and stock
+          if (project.subtitle != null || project.stockRemaining != null)
+            Text(
+              '${project.subtitle ?? ""}${project.subtitle != null && project.stockRemaining != null ? "  •  " : ""}${project.stockRemaining != null ? "Sisa ${project.stockRemaining} unit" : ""}',
+              style: AppTextStyles.small(
+                  color: AppColors.textWhite.withOpacity(0.9)),
             ),
-          ),
-          const SizedBox(height: 16),
+          if (project.subtitle != null || project.stockRemaining != null)
+            const SizedBox(height: 8),
+          // Price line
+          if (project.priceMin != null && project.priceMax != null)
+            Text(
+              'Rp${project.priceMin!.toStringAsFixed(1)} Jt - Rp${project.priceMax!.toStringAsFixed(1)} M',
+              style: AppTextStyles.projectName(),
+            ),
+          if (project.priceMin != null && project.priceMax != null)
+            const SizedBox(height: 4),
+          // Installment
+          if (project.installmentStarting != null)
+            Text(
+              'Angsuran mulai dari Rp${project.installmentStarting!.toStringAsFixed(2)} Juta/bln',
+              style: AppTextStyles.bodyText(
+                color: AppColors.orange,
+                fontSize: 14,
+              ),
+            ),
+          if (project.installmentStarting != null) const SizedBox(height: 16),
           // Project name + developer
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColors.white,
-                child: Icon(
-                  Icons.location_city,
-                  size: 18,
-                  color: AppColors.primaryDarkGreen,
-                ),
-              ),
+              // Profile picture or icon
+              project.profileImageUrl != null &&
+                      project.profileImageUrl!.isNotEmpty
+                  ? CircleAvatar(
+                      radius: 16,
+                      backgroundImage: NetworkImage(project.profileImageUrl!),
+                      backgroundColor: AppColors.white,
+                    )
+                  : const CircleAvatar(
+                      radius: 16,
+                      backgroundColor: AppColors.white,
+                      child: Icon(
+                        Icons.location_city,
+                        size: 18,
+                        color: AppColors.primaryDarkGreen,
+                      ),
+                    ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -213,14 +228,14 @@ class ProjectHighlightCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'by PT Sumber Sentuhan Emas',
+                      'by ${project.developerName ?? "PT Sumber Sentuhan Emas"}',
                       style: AppTextStyles.small(
                         color: AppColors.textWhite.withOpacity(0.8),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Kec. Tamalate, Kota Makassar',
+                      '${project.district ?? ""}${project.district != null && project.city != null ? ", " : ""}${project.city ?? ""}',
                       style: AppTextStyles.small(
                         color: AppColors.textWhite.withOpacity(0.8),
                       ),
@@ -233,18 +248,20 @@ class ProjectHighlightCard extends StatelessWidget {
           const SizedBox(height: 12),
           // Specs row
           Text(
-            '4 KT   •   LT 100 m²   •   LB 105-138 m²   •   HGB',
+            _buildSpecsText(),
             style: AppTextStyles.small(
               color: AppColors.textWhite.withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            'Diperbarui 1 bulan lalu',
-            style: AppTextStyles.small(
-              color: AppColors.textWhite.withOpacity(0.7),
+          // Last updated
+          if (project.lastUpdated != null)
+            Text(
+              'Diperbarui ${_formatTimeAgo(project.lastUpdated!)}',
+              style: AppTextStyles.small(
+                color: AppColors.textWhite.withOpacity(0.7),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -264,9 +281,16 @@ class ProjectHighlightCard extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () {
-                // TODO: Open brochure
-              },
+              onPressed:
+                  project.brochureUrl != null && project.brochureUrl!.isNotEmpty
+                      ? () async {
+                          final url = Uri.parse(project.brochureUrl!);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      : null,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textWhite,
                 side: const BorderSide(color: AppColors.textWhite),
@@ -304,5 +328,48 @@ class ProjectHighlightCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _buildSpecsText() {
+    final parts = <String>[];
+
+    if (project.bedrooms != null) {
+      parts.add('${project.bedrooms} KT');
+    }
+
+    if (project.landArea != null) {
+      parts.add('LT ${project.landArea!.toStringAsFixed(0)} m²');
+    }
+
+    if (project.buildingArea != null) {
+      parts.add('LB ${project.buildingArea!.toStringAsFixed(0)} m²');
+    }
+
+    if (project.certificateType != null) {
+      parts.add(project.certificateType!);
+    }
+
+    return parts.isNotEmpty ? parts.join('   •   ') : 'No specs available';
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 365) {
+      final years = (difference.inDays / 365).floor();
+      return '$years tahun lalu';
+    } else if (difference.inDays > 30) {
+      final months = (difference.inDays / 30).floor();
+      return '$months bulan lalu';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} hari lalu';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} jam lalu';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} menit lalu';
+    } else {
+      return 'Baru saja';
+    }
   }
 }

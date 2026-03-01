@@ -6,6 +6,8 @@ class NearbyLocationModel {
       category; // "Pusat Perbelanjaan", "Pendidikan", "Kesehatan", "Transportasi"
   final double distance; // Distance value
   final String distanceUnit; // "KM" or "MENIT"
+  final double? latitude; // Optional latitude for map markers
+  final double? longitude; // Optional longitude for map markers
 
   NearbyLocationModel({
     required this.id,
@@ -13,6 +15,8 @@ class NearbyLocationModel {
     required this.category,
     required this.distance,
     this.distanceUnit = 'KM',
+    this.latitude,
+    this.longitude,
   });
 
   /// Convert to JSON for Firebase
@@ -23,6 +27,8 @@ class NearbyLocationModel {
       'category': category,
       'distance': distance,
       'distanceUnit': distanceUnit,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
@@ -34,6 +40,8 @@ class NearbyLocationModel {
       category: json['category'] as String? ?? '',
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       distanceUnit: json['distanceUnit'] as String? ?? 'KM',
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
 
@@ -43,6 +51,8 @@ class NearbyLocationModel {
     String? category,
     double? distance,
     String? distanceUnit,
+    double? latitude,
+    double? longitude,
   }) {
     return NearbyLocationModel(
       id: id ?? this.id,
@@ -50,6 +60,8 @@ class NearbyLocationModel {
       category: category ?? this.category,
       distance: distance ?? this.distance,
       distanceUnit: distanceUnit ?? this.distanceUnit,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 }

@@ -4,6 +4,7 @@ import '../../../../data/models/project_model.dart';
 import '../../../../data/models/unit_type_model.dart';
 import '../../../../data/models/nearby_location_model.dart';
 import '../widgets/admin_image_picker.dart';
+import '../widgets/location_picker.dart';
 
 class EnhancedProjectEditDialog extends StatefulWidget {
   final ProjectModel? project;
@@ -29,7 +30,14 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
   late TextEditingController _statusController;
   String _imageUrl = '';
   String _adImageUrl = '';
+  String _profileImageUrl = '';
   bool _isFeatured = false;
+
+  // Projects Page Fields
+  late TextEditingController _subtitleController;
+  late TextEditingController _stockController;
+  late TextEditingController _installmentController;
+  late TextEditingController _brochureUrlController;
 
   // Price & Property Details Controllers
   late TextEditingController _priceMinController;
@@ -45,10 +53,14 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
   late TextEditingController _districtController;
   late TextEditingController _cityController;
   late TextEditingController _provinceController;
+  double? _latitude;
+  double? _longitude;
 
   // State
   List<UnitTypeModel> _unitTypes = [];
   List<NearbyLocationModel> _nearbyLocations = [];
+  List<String> _facilities = [];
+  List<String> _imageGallery = [];
   String _selectedLocationCategory = 'Pusat Perbelanjaan';
   int _selectedUnitTypeIndex = 0;
 
@@ -68,7 +80,16 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
         TextEditingController(text: p?.status ?? 'On Going Project');
     _imageUrl = p?.imageUrl ?? '';
     _adImageUrl = p?.adImageUrl ?? '';
+    _profileImageUrl = p?.profileImageUrl ?? '';
     _isFeatured = p?.isFeatured ?? false;
+
+    // Projects Page Fields
+    _subtitleController = TextEditingController(text: p?.subtitle ?? '');
+    _stockController =
+        TextEditingController(text: p?.stockRemaining?.toString() ?? '');
+    _installmentController =
+        TextEditingController(text: p?.installmentStarting?.toString() ?? '');
+    _brochureUrlController = TextEditingController(text: p?.brochureUrl ?? '');
 
     // Price & Property Details
     _priceMinController =
@@ -90,10 +111,14 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
     _districtController = TextEditingController(text: p?.district ?? '');
     _cityController = TextEditingController(text: p?.city ?? '');
     _provinceController = TextEditingController(text: p?.province ?? '');
+    _latitude = p?.latitude;
+    _longitude = p?.longitude;
 
     // Lists
     _unitTypes = List.from(p?.unitTypes ?? []);
     _nearbyLocations = List.from(p?.nearbyLocations ?? []);
+    _facilities = List.from(p?.features ?? []);
+    _imageGallery = List.from(p?.imageGallery ?? []);
   }
 
   @override
@@ -112,218 +137,356 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
     _districtController.dispose();
     _cityController.dispose();
     _provinceController.dispose();
+    _subtitleController.dispose();
+    _stockController.dispose();
+    _installmentController.dispose();
+    _brochureUrlController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(24),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.85,
+        width: isMobile
+            ? MediaQuery.of(context).size.width * 0.95
+            : MediaQuery.of(context).size.width * 0.85,
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
           color: Colors.grey[50],
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          children: [
-            // Main Form Area
-            Expanded(
-              flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+        child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[200]!),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.edit_document, color: Colors.grey[700], size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  widget.project == null ? 'Add New Project' : 'Edit Project',
+                  style: TextStyle(
+                    color: Colors.grey[900],
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.grey[600]),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          // Scrollable Form Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
+              child: Form(
+                key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          bottom: BorderSide(color: Colors.grey[200]!),
+                    _buildBasicInfoSection(),
+                    const SizedBox(height: 40),
+                    _buildImageGallerySection(),
+                    const SizedBox(height: 40),
+                    _buildPriceDetailsSection(),
+                    const SizedBox(height: 40),
+                    _buildLocationSection(),
+                    const SizedBox(height: 40),
+                    _buildFacilitiesSection(),
+                    const SizedBox(height: 40),
+                    _buildUnitTypesSection(),
+                    const SizedBox(height: 100), // Space for buttons
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Bottom Action Buttons
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: Colors.grey[200]!),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _handleSave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      children: [
+        // Main Form Area
+        Expanded(
+          flex: 3,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey[200]!),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_document,
+                          color: Colors.grey[700], size: 28),
+                      const SizedBox(width: 12),
+                      Text(
+                        widget.project == null
+                            ? 'Add New Project'
+                            : 'Edit Project',
+                        style: TextStyle(
+                          color: Colors.grey[900],
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      child: Row(
+                      const Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.grey[600]),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+                // Scrollable Form Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(32),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.edit_document,
-                              color: Colors.grey[700], size: 28),
-                          const SizedBox(width: 12),
-                          Text(
-                            widget.project == null
-                                ? 'Add New Project'
-                                : 'Edit Project',
-                            style: TextStyle(
-                              color: Colors.grey[900],
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.close, color: Colors.grey[600]),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
+                          _buildBasicInfoSection(),
+                          const SizedBox(height: 40),
+                          _buildImageGallerySection(),
+                          const SizedBox(height: 40),
+                          _buildPriceDetailsSection(),
+                          const SizedBox(height: 40),
+                          _buildLocationSection(),
+                          const SizedBox(height: 40),
+                          _buildFacilitiesSection(),
+                          const SizedBox(height: 40),
+                          _buildUnitTypesSection(),
+                          const SizedBox(height: 100), // Space for buttons
                         ],
                       ),
                     ),
-                    // Scrollable Form Content
+                  ),
+                ),
+                // Bottom Action Buttons
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      top: BorderSide(color: Colors.grey[200]!),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: _handleSave,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryDarkGreen,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Save Project',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Advertisement Image Sidebar
+        Container(
+          width: 280,
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 80), // Align with content
+              Text(
+                'Advertisement Banner',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[900],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Upload a promotional image for this project',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 20),
+              AdminImagePicker(
+                initialImageUrl: _adImageUrl,
+                onImageChanged: (url) => setState(() => _adImageUrl = url),
+                label: 'Ad Image',
+                storageFolder: 'projects',
+                storageSubfolder: widget.project?.id ?? 'new',
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[100]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(32),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildBasicInfoSection(),
-                              const SizedBox(height: 40),
-                              _buildPriceDetailsSection(),
-                              const SizedBox(height: 40),
-                              _buildLocationSection(),
-                              const SizedBox(height: 40),
-                              _buildUnitTypesSection(),
-                              const SizedBox(height: 100), // Space for buttons
-                            ],
-                          ),
+                      child: Text(
+                        'Recommended: 400x600px',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[900],
                         ),
-                      ),
-                    ),
-                    // Bottom Action Buttons
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          top: BorderSide(color: Colors.grey[200]!),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 14,
-                              ),
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.grey[700],
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          ElevatedButton(
-                            onPressed: _handleSave,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.orange,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 14,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Save',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            // Advertisement Image Sidebar
-            Container(
-              width: 280,
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 80), // Align with content
-                  Text(
-                    'Advertisement Banner',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[900],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Upload a promotional image for this project',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  AdminImagePicker(
-                    initialImageUrl: _adImageUrl,
-                    onImageChanged: (url) => setState(() => _adImageUrl = url),
-                    label: 'Ad Image',
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[100]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline,
-                            size: 16, color: Colors.blue[700]),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Recommended: 400x600px',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue[900],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -423,6 +586,16 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
           initialImageUrl: _imageUrl,
           onImageChanged: (url) => setState(() => _imageUrl = url),
           label: 'Project Image',
+          storageFolder: 'projects',
+          storageSubfolder: widget.project?.id ?? 'new',
+        ),
+        const SizedBox(height: 20),
+        AdminImagePicker(
+          initialImageUrl: _profileImageUrl,
+          onImageChanged: (url) => setState(() => _profileImageUrl = url),
+          label: 'Profile Picture (Circle Avatar)',
+          storageFolder: 'projects',
+          storageSubfolder: widget.project?.id ?? 'new',
         ),
         const SizedBox(height: 20),
         _buildTextField(
@@ -433,6 +606,40 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
         ),
         const SizedBox(height: 20),
         _buildTextField(
+          controller: _subtitleController,
+          label: 'Subtitle (Projects Page)',
+          hint: 'e.g., "Rumah Tahap 1"',
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                controller: _stockController,
+                label: 'Stock Remaining',
+                hint: 'e.g., 4',
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildTextField(
+                controller: _installmentController,
+                label: 'Installment Starting (Juta/bln)',
+                hint: 'e.g., 3.29',
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildTextField(
+          controller: _brochureUrlController,
+          label: 'Brochure URL',
+          hint: 'External link for brochure button',
+        ),
+        const SizedBox(height: 20),
+        _buildTextField(
           controller: _descController,
           label: 'Description',
           hint: 'Provide a detailed description of the project',
@@ -440,105 +647,375 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
           validator: (v) => v!.isEmpty ? 'Description is required' : null,
         ),
         const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
+        // Status and Featured in responsive layout
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 400;
+
+            if (isMobile) {
+              // Stack vertically on mobile
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Status',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _statusController.text,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'On Going Project',
-                        child: Text('On Going Project'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Completed',
-                        child: Text('Completed'),
-                      ),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => _statusController.text = v!),
-                  ),
+                  _buildStatusField(),
+                  const SizedBox(height: 20),
+                  _buildFeaturedField(),
                 ],
+              );
+            } else {
+              // Side by side on desktop
+              return Row(
+                children: [
+                  Expanded(child: _buildStatusField()),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildFeaturedField()),
+                ],
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Status',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _statusController.text,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: 'On Going Project',
+              child: Text('On Going Project'),
+            ),
+            DropdownMenuItem(
+              value: 'Completed',
+              child: Text('Completed'),
+            ),
+          ],
+          onChanged: (v) => setState(() => _statusController.text = v!),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeaturedField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Featured',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                _isFeatured ? Icons.star : Icons.star_border,
+                color: _isFeatured ? AppColors.orange : Colors.grey[400],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _isFeatured ? 'Featured Project' : 'Not Featured',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _isFeatured,
+                onChanged: (v) => setState(() => _isFeatured = v),
+                activeColor: AppColors.orange,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageGallerySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Image Gallery (Galeri Gambar)',
+          subtitle: 'Add multiple images for carousel display',
+        ),
+        if (_imageGallery.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                'No gallery images added yet',
+                style: TextStyle(color: Colors.grey[500]),
               ),
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.2,
+            ),
+            itemCount: _imageGallery.length,
+            itemBuilder: (context, index) {
+              return Stack(
                 children: [
-                  Text(
-                    'Featured',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey[300]!),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _isFeatured ? Icons.star : Icons.star_border,
-                          color:
-                              _isFeatured ? AppColors.orange : Colors.grey[400],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        _imageGallery[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey[200],
+                          child: Icon(Icons.image, color: Colors.grey[400]),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _isFeatured ? 'Featured Project' : 'Not Featured',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        Switch(
-                          value: _isFeatured,
-                          onChanged: (v) => setState(() => _isFeatured = v),
-                          activeColor: AppColors.orange,
-                        ),
-                      ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 20),
+                      onPressed: () {
+                        setState(() {
+                          _imageGallery.removeAt(index);
+                        });
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red.withOpacity(0.8),
+                        padding: const EdgeInsets.all(4),
+                        minimumSize: const Size(28, 28),
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
+              );
+            },
+          ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: _addGalleryImage,
+          icon: const Icon(Icons.add_photo_alternate),
+          label: const Text('Add Gallery Image'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primaryDarkGreen,
+            side: BorderSide(color: AppColors.primaryDarkGreen),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
         ),
       ],
+    );
+  }
+
+  void _addGalleryImage() {
+    String newImageUrl = '';
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: Container(
+          width: MediaQuery.of(context).size.width < 600
+              ? MediaQuery.of(context).size.width * 0.95
+              : MediaQuery.of(context).size.width * 0.5,
+          constraints: const BoxConstraints(maxWidth: 600),
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey[200]!),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_photo_alternate,
+                        color: Colors.grey[700], size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Add Gallery Image',
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.grey[600]),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Gallery Image',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[900],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Upload an image for the project gallery',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Divider(color: Colors.grey[200], height: 1),
+                      const SizedBox(height: 20),
+                      AdminImagePicker(
+                        onImageChanged: (url) => newImageUrl = url,
+                        label: 'Gallery Image',
+                        storageFolder: 'projects',
+                        storageSubfolder:
+                            '${widget.project?.id ?? 'new'}/gallery',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Actions
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: Colors.grey[200]!),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (newImageUrl.isNotEmpty) {
+                          setState(() {
+                            _imageGallery.add(newImageUrl);
+                          });
+                          Navigator.of(dialogContext).pop();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.orange,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -667,6 +1144,34 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
           controller: _provinceController,
           label: 'Province',
           hint: 'e.g., Banten',
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Map Location',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[900],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Set the project location on the map',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 16),
+        LocationPicker(
+          initialLatitude: _latitude,
+          initialLongitude: _longitude,
+          onLocationSelected: (lat, lng) {
+            setState(() {
+              _latitude = lat;
+              _longitude = lng;
+            });
+          },
         ),
         const SizedBox(height: 32),
         Text(
@@ -811,6 +1316,104 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
             _nearbyLocations.add(location);
           });
         },
+      ),
+    );
+  }
+
+  Widget _buildFacilitiesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Specifications and Facilities (Spesifikasi dan Fasilitas)',
+          subtitle: 'Add facilities and amenities available in this project',
+        ),
+        if (_facilities.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                'No facilities added yet',
+                style: TextStyle(color: Colors.grey[500]),
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _facilities.map((facility) {
+              return Chip(
+                label: Text(facility),
+                deleteIcon: const Icon(Icons.close, size: 18),
+                onDeleted: () {
+                  setState(() {
+                    _facilities.remove(facility);
+                  });
+                },
+                backgroundColor: AppColors.orange.withOpacity(0.1),
+                labelStyle: TextStyle(
+                  color: AppColors.primaryDarkGreen,
+                  fontWeight: FontWeight.w500,
+                ),
+                deleteIconColor: AppColors.primaryDarkGreen,
+              );
+            }).toList(),
+          ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: _addFacility,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Facility'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primaryDarkGreen,
+            side: BorderSide(color: AppColors.primaryDarkGreen),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _addFacility() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Facility'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'e.g., Keamanan 24 jam, Kolam Renang',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                setState(() {
+                  _facilities.add(controller.text.trim());
+                });
+                Navigator.of(context).pop();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.orange,
+            ),
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }
@@ -1040,9 +1643,20 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
       name: _nameController.text,
       description: _descController.text,
       imageUrl: _imageUrl,
+      imageGallery: _imageGallery,
+      profileImageUrl: _profileImageUrl.isEmpty ? null : _profileImageUrl,
       status: _statusController.text,
       isFeatured: _isFeatured,
-      features: widget.project?.features ?? [],
+      features: _facilities,
+      // Projects Page Fields
+      subtitle:
+          _subtitleController.text.isEmpty ? null : _subtitleController.text,
+      stockRemaining: int.tryParse(_stockController.text),
+      installmentStarting: double.tryParse(_installmentController.text),
+      lastUpdated: DateTime.now(), // Auto-set to current time
+      brochureUrl: _brochureUrlController.text.isEmpty
+          ? null
+          : _brochureUrlController.text,
       priceMin: double.tryParse(_priceMinController.text),
       priceMax: double.tryParse(_priceMaxController.text),
       bedrooms: int.tryParse(_bedroomsController.text),
@@ -1060,6 +1674,8 @@ class _EnhancedProjectEditDialogState extends State<EnhancedProjectEditDialog> {
       city: _cityController.text.isEmpty ? null : _cityController.text,
       province:
           _provinceController.text.isEmpty ? null : _provinceController.text,
+      latitude: _latitude,
+      longitude: _longitude,
       adImageUrl: _adImageUrl.isEmpty ? null : _adImageUrl,
       nearbyLocations: _nearbyLocations,
       unitTypes: _unitTypes,

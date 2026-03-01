@@ -72,39 +72,16 @@ class AppHeader extends StatelessWidget {
 
           const Spacer(),
 
-          // Right: Action icons
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.mail_outline,
-                  color: AppColors
-                      .textWhite, // Pure white for icons on dark header
-                ),
-                onPressed: onMailTap ?? () {},
-                tooltip: 'Mail',
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.person_outline,
-                  color: AppColors
-                      .textWhite, // Pure white for icons on dark header
-                ),
-                onPressed: onProfileTap ?? () {},
-                tooltip: 'Profile',
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.admin_panel_settings,
-                  color: AppColors.textWhite,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/admin/login');
-                },
-                tooltip: 'Admin Panel',
-              ),
-            ],
+          // Right: Action icon
+          IconButton(
+            icon: const Icon(
+              Icons.admin_panel_settings,
+              color: AppColors.textWhite,
+            ),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/admin/login');
+            },
+            tooltip: 'Admin Panel',
           ),
         ],
       ),

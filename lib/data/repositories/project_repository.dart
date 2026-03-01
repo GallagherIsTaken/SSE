@@ -1,6 +1,7 @@
 import '../models/project_model.dart';
 import '../models/feature_model.dart';
 import '../models/hero_image_model.dart';
+import '../models/contact_model.dart';
 import '../services/firebase_service.dart';
 import 'package:flutter/material.dart';
 
@@ -13,21 +14,18 @@ class ProjectRepository {
   List<ProjectModel>? _cachedProjects;
   List<FeatureModel>? _cachedFeatures;
   List<HeroImageModel>? _cachedHeroImages;
+  List<ContactModel>? _cachedContacts;
 
   /// Get hero carousel images
   Future<List<HeroImageModel>> getHeroImages() async {
-    if (_cachedHeroImages != null) {
-      return _cachedHeroImages!;
-    }
-
     try {
       final images = await _firebaseService.getHeroImages();
       _cachedHeroImages = images;
       return images;
     } catch (e) {
-      print('Error fetching hero images, using mock data: $e');
-      // Return empty list as fallback since we don't have mock HeroImageModel data
-      return [];
+      print('Error fetching hero images: $e');
+      // Return cached data if available, otherwise empty list
+      return _cachedHeroImages ?? [];
     }
   }
 
@@ -76,6 +74,27 @@ class ProjectRepository {
   /// Stream of hero images (real-time updates)
   Stream<List<String>> heroImagesStream() {
     return _firebaseService.heroImagesStream();
+  }
+
+  /// Get all contacts
+  Future<List<ContactModel>> getContacts() async {
+    try {
+      final contacts = await _firebaseService.getContacts();
+      if (contacts.isNotEmpty) {
+        _cachedContacts = contacts;
+        return contacts;
+      }
+    } catch (e) {
+      print('Error fetching contacts from Firebase: $e');
+    }
+
+    // Return cached data or empty list
+    return _cachedContacts ?? [];
+  }
+
+  /// Stream of contacts (real-time updates)
+  Stream<List<ContactModel>> contactsStream() {
+    return _firebaseService.contactsStream();
   }
 
   // Admin CRUD methods
@@ -222,5 +241,27 @@ class ProjectRepository {
         status: 'On Going Project',
       ),
     ];
+  }
+
+  /// Save a contact (create or update)
+  Future<void> saveContact(ContactModel contact) async {
+    try {
+      await _firebaseService.saveContact(contact);
+      _cachedContacts = null; // Invalidate cache
+    } catch (e) {
+      print('Error saving contact: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a contact
+  Future<void> deleteContact(String contactId) async {
+    try {
+      await _firebaseService.deleteContact(contactId);
+      _cachedContacts = null; // Invalidate cache
+    } catch (e) {
+      print('Error deleting contact: $e');
+      rethrow;
+    }
   }
 }

@@ -29,6 +29,9 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+    
+    // Required for Google Maps on Android 9+
+    useLibrary("org.apache.http.legacy")
 
     buildTypes {
         release {

@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/project_model.dart';
 import '../models/feature_model.dart';
 import '../models/hero_image_model.dart';
+import '../models/contact_model.dart';
 
 /// Firebase service for managing app data
-/// Uses Firestore for data storage and external URLs for images
+/// Uses Firestore for data storage and Firebase Storage for images
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -12,6 +13,7 @@ class FirebaseService {
   static const String _projectsCollection = 'projects';
   static const String _featuresCollection = 'features';
   static const String _heroImagesCollection = 'hero_images';
+  static const String _contactsCollection = 'contacts';
 
   /// Get all projects from Firestore
   Future<List<ProjectModel>> getProjects() async {
@@ -106,6 +108,40 @@ class FirebaseService {
             .toList());
   }
 
+  /// Get all contacts from Firestore
+  Future<List<ContactModel>> getContacts() async {
+    try {
+      final snapshot = await _firestore
+          .collection(_contactsCollection)
+          .orderBy('order')
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ContactModel.fromJson({
+                ...doc.data(),
+                'id': doc.id,
+              }))
+          .toList();
+    } catch (e) {
+      print('Error fetching contacts: $e');
+      return [];
+    }
+  }
+
+  /// Stream of contacts (real-time updates)
+  Stream<List<ContactModel>> contactsStream() {
+    return _firestore
+        .collection(_contactsCollection)
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ContactModel.fromJson({
+                  ...doc.data(),
+                  'id': doc.id,
+                }))
+            .toList());
+  }
+
   // Admin methods (for admin panel)
 
   /// Add or update a project
@@ -154,9 +190,9 @@ class FirebaseService {
     }
   }
 
-  // Note: Images are hosted externally (ImgBB, Cloudinary, etc.)
-  // Upload images to your preferred service and use the public URLs
-  // in the imageUrl fields when creating/updating projects and hero images
+  // Images are hosted in Firebase Storage
+  // The AdminImagePicker widget handles uploading images and returns
+  // the Firebase Storage download URLs to use in imageUrl fields
 
   /// Add hero image with external URL (auto-calculates order)
   Future<void> addHeroImage(String imageUrl) async {
@@ -189,6 +225,29 @@ class FirebaseService {
       await _firestore.collection(_heroImagesCollection).doc(docId).delete();
     } catch (e) {
       print('Error deleting hero image: $e');
+      rethrow;
+    }
+  }
+
+  /// Add or update a contact
+  Future<void> saveContact(ContactModel contact) async {
+    try {
+      await _firestore
+          .collection(_contactsCollection)
+          .doc(contact.id)
+          .set(contact.toJson());
+    } catch (e) {
+      print('Error saving contact: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a contact
+  Future<void> deleteContact(String contactId) async {
+    try {
+      await _firestore.collection(_contactsCollection).doc(contactId).delete();
+    } catch (e) {
+      print('Error deleting contact: $e');
       rethrow;
     }
   }

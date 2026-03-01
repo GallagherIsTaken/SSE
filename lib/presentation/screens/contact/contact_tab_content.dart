@@ -1,22 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../data/repositories/project_repository.dart';
+import '../../../data/models/contact_model.dart';
 
 /// Contact tab body: Marketing list, office info, map.
-class ContactTabContent extends StatelessWidget {
+class ContactTabContent extends StatefulWidget {
   const ContactTabContent({super.key});
 
-  static const List<({String name, String message})> _marketing = [
-    (name: 'Wawan', message: 'Kamar mandi ada tiga kak'),
-    (name: 'Regita', message: 'You : Untuk kamar mandi nya ada berapa ya?'),
-    (
-      name: 'Andika',
-      message: 'Untuk Cendrawasih Residence masih ada 4 unit kak'
-    ),
-    (name: 'Elsya', message: 'You : Kenapa?'),
-  ];
+  @override
+  State<ContactTabContent> createState() => _ContactTabContentState();
+}
+
+class _ContactTabContentState extends State<ContactTabContent> {
+  final _repository = ProjectRepository();
+  List<ContactModel> _contacts = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+    setState(() => _isLoading = true);
+    try {
+      final contacts = await _repository.getContacts();
+      setState(() {
+        _contacts = contacts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openWhatsApp(ContactModel contact) async {
+    final url = Uri.parse(contact.whatsappUrl);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open WhatsApp')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +92,28 @@ class ContactTabContent extends StatelessWidget {
                       AppTextStyles.sectionHeading(color: AppColors.textBlack),
                 ),
                 const SizedBox(height: 16),
-                ..._marketing
-                    .map((m) => _buildMarketingCard(m.name, m.message)),
+
+                // Loading or contacts list
+                if (_isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else if (_contacts.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        'No contacts available',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  )
+                else
+                  ..._contacts.map((contact) => _buildMarketingCard(contact)),
+
                 const SizedBox(height: 24),
                 _buildOrangeDivider(),
                 const SizedBox(height: 16),
@@ -100,47 +154,50 @@ class ContactTabContent extends StatelessWidget {
     );
   }
 
-  Widget _buildMarketingCard(String name, String message) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.primaryDarkGreen,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildAvatar(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: AppTextStyles.bodyText(
-                    color: AppColors.textWhite,
-                    fontSize: 16,
-                  ).copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  message,
-                  style: AppTextStyles.small(
-                      color: AppColors.textWhite.withOpacity(0.85)),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+  Widget _buildMarketingCard(ContactModel contact) {
+    return InkWell(
+      onTap: () => _openWhatsApp(contact),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.primaryDarkGreen,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildAvatar(contact),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    contact.name,
+                    style: AppTextStyles.bodyText(
+                      color: AppColors.textWhite,
+                      fontSize: 16,
+                    ).copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    contact.description,
+                    style: AppTextStyles.small(
+                        color: AppColors.textWhite.withOpacity(0.85)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(ContactModel contact) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -149,10 +206,15 @@ class ContactTabContent extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.orange, width: 2),
           ),
-          child: const CircleAvatar(
+          child: CircleAvatar(
             radius: 24,
             backgroundColor: AppColors.lightGray,
-            child: Icon(Icons.person, color: AppColors.darkGray, size: 28),
+            backgroundImage: contact.profilePictureUrl.isNotEmpty
+                ? NetworkImage(contact.profilePictureUrl)
+                : null,
+            child: contact.profilePictureUrl.isEmpty
+                ? const Icon(Icons.person, color: AppColors.darkGray, size: 28)
+                : null,
           ),
         ),
         Positioned(
