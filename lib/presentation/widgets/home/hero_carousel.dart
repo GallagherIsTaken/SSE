@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../providers/project_provider.dart';
-import 'feature_list_item.dart';
 
 /// Hero carousel widget with overlay banner and features
 class HeroCarousel extends ConsumerStatefulWidget {
@@ -21,7 +19,6 @@ class _HeroCarouselState extends ConsumerState<HeroCarousel> {
   Widget build(BuildContext context) {
     final projectState = ref.watch(projectProvider);
     final heroImages = projectState.heroImages;
-    final features = projectState.features;
 
     if (heroImages.isEmpty) {
       // Placeholder when no images

@@ -186,60 +186,87 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Widget _buildPriceAndInfoSection() {
     // Format price range
-    String priceText = 'Price not available';
+    String priceText = 'Harga belum tersedia';
     if (widget.project.priceMin != null && widget.project.priceMax != null) {
       priceText =
           'Rp${widget.project.priceMin!.toStringAsFixed(1)} Jt - Rp${widget.project.priceMax!.toStringAsFixed(1)} M';
     } else if (widget.project.priceMin != null) {
-      priceText = 'From Rp${widget.project.priceMin!.toStringAsFixed(1)} Jt';
+      priceText = 'Mulai Rp${widget.project.priceMin!.toStringAsFixed(1)} Jt';
     }
-
-    // Format property details
-    final List<String> details = [];
-    if (widget.project.bedrooms != null)
-      details.add('${widget.project.bedrooms} KT');
-    if (widget.project.landArea != null)
-      details.add('LT ${widget.project.landArea!.toStringAsFixed(0)} m²');
-    if (widget.project.buildingArea != null)
-      details.add('LB ${widget.project.buildingArea!.toStringAsFixed(0)} m²');
-    if (widget.project.certificateType != null)
-      details.add(widget.project.certificateType!);
-    final detailsText =
-        details.isNotEmpty ? details.join('   •   ') : 'Details not available';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
       color: AppColors.primaryDarkGreen,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            priceText,
-            style: AppTextStyles.projectName(),
+          // ── Price & status block ──────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Status badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.orange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppColors.orange, width: 1),
+                  ),
+                  child: Text(
+                    widget.project.status.toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.orange,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Price — large & bold
+                Text(
+                  priceText,
+                  style: const TextStyle(
+                    color: AppColors.textWhite,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          Container(height: 2, color: AppColors.orange),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile Picture
-                    widget.project.profileImageUrl != null &&
-                            widget.project.profileImageUrl!.isNotEmpty
-                        ? CircleAvatar(
-                            radius: 20,
-                            backgroundImage:
-                                NetworkImage(widget.project.profileImageUrl!),
-                            backgroundColor: AppColors.white,
-                          )
-                        : CircleAvatar(
-                            radius: 20,
-                            backgroundColor: AppColors.white,
+
+          // Orange divider
+          Container(height: 3, color: AppColors.orange),
+
+          // ── Developer / project identity block ───────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo / avatar
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white,
+                    border: Border.all(
+                        color: AppColors.orange.withValues(alpha: 0.6),
+                        width: 1.5),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: widget.project.profileImageUrl != null &&
+                          widget.project.profileImageUrl!.isNotEmpty
+                      ? Image.network(
+                          widget.project.profileImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Center(
                             child: Text(
                               widget.project.name.isNotEmpty
                                   ? widget.project.name[0].toUpperCase()
@@ -247,74 +274,152 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                               style: const TextStyle(
                                 color: AppColors.primaryDarkGreen,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 20,
                               ),
                             ),
                           ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.project.name,
-                      style: AppTextStyles.bodyText(
-                        color: AppColors.textWhite,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'by ${widget.project.developerName ?? "PT Sumber Sentuhan Emas"}',
-                      style: AppTextStyles.small(
-                        color: AppColors.textWhite.withOpacity(0.85),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.project.district != null &&
-                              widget.project.province != null
-                          ? '${widget.project.district}, ${widget.project.province}'
-                          : widget.project.fullAddress ??
-                              'Location not specified',
-                      style: AppTextStyles.small(
-                        color: AppColors.textWhite.withOpacity(0.85),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      detailsText,
-                      style: AppTextStyles.small(
-                        color: AppColors.textWhite.withOpacity(0.9),
-                      ),
-                    ),
-                  ],
+                        )
+                      : Center(
+                          child: Text(
+                            widget.project.name.isNotEmpty
+                                ? widget.project.name[0].toUpperCase()
+                                : 'G',
+                            style: const TextStyle(
+                              color: AppColors.primaryDarkGreen,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
                 ),
-              ),
-              // Advertisement Image
-              if (widget.project.adImageUrl != null &&
-                  widget.project.adImageUrl!.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.orange, width: 2),
+                const SizedBox(width: 14),
+                // Name + developer + location
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.project.name,
+                        style: const TextStyle(
+                          color: AppColors.textWhite,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'by ${widget.project.developerName ?? "PT Sumber Sentuhan Emas"}',
+                        style: TextStyle(
+                          color: AppColors.textWhite.withValues(alpha: 0.75),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on,
+                              size: 14,
+                              color:
+                                  AppColors.textWhite.withValues(alpha: 0.7)),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              widget.project.district != null &&
+                                      widget.project.province != null
+                                  ? '${widget.project.district}, ${widget.project.province}'
+                                  : widget.project.fullAddress ??
+                                      'Lokasi belum diisi',
+                              style: TextStyle(
+                                color:
+                                    AppColors.textWhite.withValues(alpha: 0.8),
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      widget.project.adImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.lightGray,
-                        child:
+                ),
+                // Advertisement image
+                if (widget.project.adImageUrl != null &&
+                    widget.project.adImageUrl!.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(left: 12),
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.orange, width: 2),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        widget.project.adImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
                             const Icon(Icons.image, color: AppColors.darkGray),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
+          ),
+
+          // ── Spec icons row ────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Wrap(
+              spacing: 20,
+              runSpacing: 8,
+              children: [
+                if (widget.project.bedrooms != null)
+                  _buildSpecChip(
+                    Icons.bed_outlined,
+                    '${widget.project.bedrooms} KT',
+                  ),
+                if (widget.project.landArea != null)
+                  _buildSpecChip(
+                    Icons.crop_square_outlined,
+                    'LT ${widget.project.landArea!.toStringAsFixed(0)} m²',
+                  ),
+                if (widget.project.buildingArea != null)
+                  _buildSpecChip(
+                    Icons.home_outlined,
+                    'LB ${widget.project.buildingArea!.toStringAsFixed(0)} m²',
+                  ),
+                if (widget.project.certificateType != null)
+                  _buildSpecChip(
+                    Icons.verified_outlined,
+                    widget.project.certificateType!,
+                  ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Small icon + label chip used in the spec row.
+  Widget _buildSpecChip(IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: AppColors.orange),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textWhite,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -698,26 +803,24 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Widget _buildUnitTypeChip(String label, int index) {
     final selected = _selectedUnitTypeIndex == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedUnitTypeIndex = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.orange : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.orange,
-              width: 1.5,
-            ),
+    return GestureDetector(
+      onTap: () => setState(() => _selectedUnitTypeIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.orange : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.orange,
+            width: 1.5,
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.label(
-              color: AppColors.textWhite,
-              fontSize: 14,
-            ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.label(
+            color: AppColors.textWhite,
+            fontSize: 14,
           ),
         ),
       ),
