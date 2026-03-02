@@ -36,15 +36,31 @@ class UnitTypeModel {
 
   /// Create from Firebase JSON
   factory UnitTypeModel.fromJson(Map<String, dynamic> json) {
+    // Helper: safely parse a value that may be num, String, or null
+    double safeDouble(dynamic v) {
+      if (v == null) return 0.0;
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v) ?? 0.0;
+      return 0.0;
+    }
+
+    int safeInt(dynamic v, {int fallback = 0}) {
+      if (v == null) return fallback;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      if (v is String) return int.tryParse(v) ?? fallback;
+      return fallback;
+    }
+
     return UnitTypeModel(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      landArea: (json['landArea'] as num?)?.toDouble() ?? 0.0,
-      buildingArea: (json['buildingArea'] as num?)?.toDouble() ?? 0.0,
-      bedrooms: json['bedrooms'] as int? ?? 0,
-      bathrooms: json['bathrooms'] as int? ?? 0,
-      floors: json['floors'] as int? ?? 1,
+      price: safeDouble(json['price']),
+      landArea: safeDouble(json['landArea']),
+      buildingArea: safeDouble(json['buildingArea']),
+      bedrooms: safeInt(json['bedrooms']),
+      bathrooms: safeInt(json['bathrooms']),
+      floors: safeInt(json['floors'], fallback: 1),
     );
   }
 

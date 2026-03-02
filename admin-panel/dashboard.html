@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Sumber Sinar Emas</title>
-    <meta name="description" content="Admin dashboard for managing Sumber Sinar Emas real estate content.">
+    <title>Admin Dashboard — Sumber Sentuhan Emas</title>
+    <meta name="description" content="Admin dashboard for managing Sumber Sentuhan Emas real estate content.">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body>
@@ -25,7 +27,7 @@
                             d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
                 </div>
-                <span class="sidebar-title">Sumber Sinar Emas</span>
+                <span class="sidebar-title">Sumber Sentuhan Emas</span>
                 <span class="sidebar-subtitle">Admin Panel</span>
             </div>
 
@@ -280,7 +282,7 @@
 
     <!-- ══ Project Modal ══════════════════════════════════════ -->
     <div class="modal-overlay" id="project-modal">
-        <div class="modal" style="max-width:800px">
+        <div class="modal" style="max-width:900px">
             <div class="modal-header">
                 <h3 id="modal-project-title">Add Project</h3>
                 <button class="modal-close" id="project-modal-close" aria-label="Close">
@@ -291,77 +293,128 @@
             </div>
             <div class="modal-body">
                 <div class="field-grid">
-                    <!-- Basic Info -->
+
+                    <!-- ─ Basic Information ─ -->
                     <div class="field-section">Basic Information</div>
-                    <div class="field full">
-                        <label>Project Name *</label>
-                        <input type="text" id="proj-name" placeholder="e.g. Grand Residence">
+                    <!-- Ad image on the left, fields on the right -->
+                    <div class="field full"
+                        style="display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:start">
+                        <!-- Ad / Thumbnail image (left) -->
+                        <div>
+                            <label style="display:block;margin-bottom:6px">Ad Image</label>
+                            <label style="cursor:pointer;display:block">
+                                <div id="proj-adImg-preview"
+                                    style="width:120px;height:120px;border-radius:10px;border:2px dashed #d1d5db;overflow:hidden;background:#f9fafb;display:flex;align-items:center;justify-content:center">
+                                    <div style="text-align:center;color:#9ca3af;font-size:11px">
+                                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" style="margin:0 auto 4px">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Click to upload
+                                    </div>
+                                </div>
+                                <input type="file" id="project-adimg-input" accept="image/*" style="display:none">
+                                <input type="hidden" id="proj-adImageUrl">
+                            </label>
+                            <p style="font-size:10px;color:#9ca3af;margin-top:4px">Ad thumbnail (1:1)</p>
+                        </div>
+                        <!-- Basic fields -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                            <div class="field full" style="margin:0">
+                                <label>Project Name *</label>
+                                <input type="text" id="proj-name" placeholder="e.g. Grand Residence">
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label>Status</label>
+                                <select id="proj-status">
+                                    <option value="On Going Project">On Going Project</option>
+                                    <option value="Upcoming Project">Upcoming Project</option>
+                                    <option value="Completed Project">Completed Project</option>
+                                </select>
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label>Subtitle</label>
+                                <input type="text" id="proj-subtitle" placeholder="e.g. Rumah Tahap 1">
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label>Developer Name</label>
+                                <input type="text" id="proj-developerName" placeholder="Builder name">
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label>Certificate Type</label>
+                                <select id="proj-certificateType">
+                                    <option value="">— Select —</option>
+                                    <option value="SHM">SHM</option>
+                                    <option value="HGB">HGB</option>
+                                    <option value="Strata">Strata</option>
+                                    <option value="Other">Other (custom)</option>
+                                </select>
+                                <div id="custom-cert-wrap" style="display:none;margin-top:6px">
+                                    <input type="text" id="proj-certificateCustom" placeholder="Enter certificate type…"
+                                        style="width:100%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Description full width -->
                     <div class="field full">
                         <label>Description</label>
                         <textarea id="proj-description" rows="3"
                             placeholder="Brief description of the project…"></textarea>
                     </div>
-                    <div class="field">
-                        <label>Status</label>
-                        <select id="proj-status">
-                            <option value="On Going Project">On Going Project</option>
-                            <option value="Upcoming Project">Upcoming Project</option>
-                            <option value="Completed Project">Completed Project</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Subtitle</label>
-                        <input type="text" id="proj-subtitle" placeholder="e.g. Rumah Tahap 1">
-                    </div>
-                    <div class="field">
-                        <label>Developer Name</label>
-                        <input type="text" id="proj-developerName" placeholder="Developer or builder name">
-                    </div>
-                    <div class="field">
-                        <label>Certificate Type</label>
-                        <select id="proj-certificateType">
-                            <option value="">— Select —</option>
-                            <option value="SHM">SHM (Sertifikat Hak Milik)</option>
-                            <option value="HGB">HGB (Hak Guna Bangunan)</option>
-                            <option value="Strata">Strata</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
 
-                    <!-- Image -->
-                    <div class="field-section">Main Image</div>
-                    <div class="field full" style="display:flex;gap:10px;align-items:flex-end">
-                        <div style="flex:1">
-                            <label>Image URL</label>
-                            <input type="url" id="proj-imageUrl" placeholder="https://…">
+                    <!-- ─ Main Image / Gallery ─ -->
+                    <div class="field-section">Main Image &amp; Gallery</div>
+                    <div class="field full">
+                        <!-- Current main image large preview -->
+                        <div id="proj-mainImg-preview"
+                            style="width:100%;height:200px;border-radius:10px;border:2px dashed #d1d5db;overflow:hidden;background:#f3f4f6;margin-bottom:10px;display:flex;align-items:center;justify-content:center">
                         </div>
-                        <div>
-                            <label>Or upload</label>
-                            <label class="btn btn-upload" id="proj-upload-btn" style="cursor:pointer;margin-bottom:0">
+                        <input type="hidden" id="proj-mainImg-url-store">
+                        <!-- Gallery strip -->
+                        <div id="gallery-container" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                        </div>
+                        <!-- Upload buttons -->
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <label class="btn btn-upload" style="cursor:pointer;margin:0">
                                 <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                                 </svg>
-                                Upload Image
-                                <input type="file" id="project-image-input" accept="image/*" style="display:none">
+                                Upload to Gallery
+                                <input type="file" id="project-mainimg-input" accept="image/*" style="display:none">
+                            </label>
+                            <label class="btn btn-upload" style="cursor:pointer;margin:0">
+                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                </svg>
+                                Upload Multiple
+                                <input type="file" id="project-gallery-input" accept="image/*" multiple
+                                    style="display:none">
                             </label>
                         </div>
+                        <p style="font-size:11px;color:#9ca3af;margin-top:6px">First image in gallery = main image
+                            displayed. Drag × to reorder.</p>
                     </div>
 
-                    <!-- Pricing -->
-                    <div class="field-section">Pricing & Details</div>
+                    <!-- ─ Pricing & Details ─ -->
+                    <div class="field-section">Pricing &amp; Details</div>
                     <div class="field">
-                        <label>Min Price (Juta)</label>
+                        <label>Min Price (Juta) <span id="proj-priceMin-hint"
+                                style="display:none;color:var(--orange);font-size:11px;font-weight:600"></span></label>
                         <input type="number" id="proj-priceMin" placeholder="e.g. 400">
                     </div>
                     <div class="field">
-                        <label>Max Price (Juta)</label>
+                        <label>Max Price (Juta) <span id="proj-priceMax-hint"
+                                style="display:none;color:var(--orange);font-size:11px;font-weight:600"></span></label>
                         <input type="number" id="proj-priceMax" placeholder="e.g. 900">
                     </div>
                     <div class="field">
-                        <label>Bedrooms</label>
+                        <label>Bedrooms (KT)</label>
                         <input type="number" id="proj-bedrooms" placeholder="e.g. 3">
                     </div>
                     <div class="field">
@@ -385,7 +438,7 @@
                         <input type="url" id="proj-brochureUrl" placeholder="https://…">
                     </div>
 
-                    <!-- Location -->
+                    <!-- ─ Location ─ -->
                     <div class="field-section">Location</div>
                     <div class="field full">
                         <label>Full Address</label>
@@ -403,6 +456,7 @@
                         <label>Province</label>
                         <input type="text" id="proj-province" placeholder="e.g. Sumatera Utara">
                     </div>
+                    <!-- Lat/Lng + map preview -->
                     <div class="field">
                         <label>Latitude</label>
                         <input type="number" step="any" id="proj-latitude" placeholder="e.g. 3.597">
@@ -411,16 +465,98 @@
                         <label>Longitude</label>
                         <input type="number" step="any" id="proj-longitude" placeholder="e.g. 98.673">
                     </div>
-
-                    <!-- Features -->
-                    <div class="field-section">Features & Settings</div>
                     <div class="field full">
-                        <label>Features (press Enter to add)</label>
-                        <div class="tags-input-area" id="feature-tags-wrapper">
-                            <span id="feature-tags-container"></span>
-                            <input class="tags-input" type="text" id="feature-tag-input"
-                                placeholder="e.g. Swimming Pool…">
+                        <div id="map-preview"
+                            style="width:100%;height:220px;border-radius:10px;border:1px solid #e5e7eb;background:#f3f4f6;overflow:hidden">
                         </div>
+                        <p style="font-size:11px;color:#9ca3af;margin-top:4px">Map updates automatically when you enter
+                            coordinates.</p>
+                    </div>
+
+                    <!-- ─ Nearby POIs ─ -->
+                    <div class="field-section" style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Nearby Points of Interest</span>
+                        <button type="button" id="btn-add-poi" class="btn btn-add btn-sm" style="margin:0">+ Add
+                            POI</button>
+                    </div>
+                    <div class="field full">
+                        <div style="overflow-x:auto">
+                            <table style="font-size:12px">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Distance</th>
+                                        <th style="width:40px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="poi-tbody">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">No POIs
+                                            added.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ─ Pilihan Tipe Unit ─ -->
+                    <div class="field-section" style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Pilihan Tipe Unit</span>
+                        <button type="button" id="btn-add-unit" class="btn btn-add btn-sm" style="margin:0">+ Add Unit
+                            Type</button>
+                    </div>
+                    <div class="field full">
+                        <div id="unit-types-container">
+                            <p style="text-align:center;color:#9ca3af;font-size:13px;padding:16px">No unit types added.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ─ Site Map ─ -->
+                    <div class="field-section">Site Map</div>
+                    <div class="field full">
+                        <div style="display:flex;gap:16px;align-items:flex-start">
+                            <div id="proj-sitemap-preview"
+                                style="width:110px;height:196px;border-radius:10px;border:2px dashed #d1d5db;background:#f9fafb;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                                <div style="text-align:center;color:#9ca3af;font-size:11px">
+                                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        style="margin:0 auto 4px">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497z" />
+                                    </svg>
+                                    9:16<br>Site Map
+                                </div>
+                            </div>
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:8px">Upload Site Map Image (9:16
+                                    portrait)</label>
+                                <label class="btn btn-upload" style="cursor:pointer;display:inline-flex">
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                    </svg>
+                                    Upload Site Map
+                                    <input type="file" id="project-sitemap-input" accept="image/*" style="display:none">
+                                </label>
+                                <input type="hidden" id="proj-sitemapUrl">
+                                <p style="font-size:11px;color:#9ca3af;margin-top:8px">Recommended: 9:16 portrait image
+                                    showing the property layout / block plan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ─ Features & Settings ─ -->
+                    <div class="field-section">Features &amp; Settings</div>
+                    <div class="field full">
+                        <label>Features — press Enter or comma to add</label>
+                        <div style="display:flex;gap:8px;margin-bottom:10px">
+                            <input type="text" id="feature-tag-input" placeholder="e.g. Swimming Pool" style="flex:1">
+                        </div>
+                        <div id="feature-tags-container"></div>
+                        <p style="font-size:11px;color:#9ca3af;margin-top:6px">Click the image placeholder on each
+                            feature to upload a 1:1 icon image.</p>
                     </div>
                     <div class="field full">
                         <div class="toggle-field">
@@ -428,6 +564,7 @@
                             <label for="proj-isFeatured">Featured project (shown prominently in app)</label>
                         </div>
                     </div>
+
                 </div>
             </div>
             <div class="modal-footer">

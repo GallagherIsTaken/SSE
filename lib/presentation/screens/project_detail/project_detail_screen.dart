@@ -112,14 +112,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildMainImage() {
-    // Get all images: gallery images + main image + ad image
-    final List<String> allImages = [
-      ...widget.project.imageGallery,
-      if (widget.project.imageGallery.isEmpty) widget.project.imageUrl,
-      if (widget.project.adImageUrl != null &&
-          widget.project.adImageUrl!.isNotEmpty)
-        widget.project.adImageUrl!,
-    ];
+    // Gallery images only – adImageUrl is shown separately in the info section
+    final List<String> allImages = widget.project.imageGallery.isNotEmpty
+        ? widget.project.imageGallery
+        : (widget.project.imageUrl.isNotEmpty ? [widget.project.imageUrl] : []);
 
     if (allImages.isEmpty) {
       return AspectRatio(
@@ -749,6 +745,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildSitePlanSection() {
+    final sitemapUrl = widget.project.sitemapUrl;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -756,18 +753,33 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: AppColors.secondaryDarkGreen,
+          if (sitemapUrl != null && sitemapUrl.isNotEmpty)
+            ClipRRect(
               borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Icon(Icons.map,
-                  size: 48, color: AppColors.textWhite.withOpacity(0.5)),
-            ),
-          ),
+              child: Image.network(
+                sitemapUrl,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => _buildSitePlanPlaceholder(),
+              ),
+            )
+          else
+            _buildSitePlanPlaceholder(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSitePlanPlaceholder() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: AppColors.secondaryDarkGreen,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Icon(Icons.map,
+            size: 48, color: AppColors.textWhite.withOpacity(0.5)),
       ),
     );
   }
@@ -847,20 +859,42 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildFacilityChip(String label) {
+  /// Builds a facility chip. Accepts either a plain String name or a Map {name, imageUrl}.
+  Widget _buildFacilityChip(dynamic feature) {
+    final String label = feature is Map
+        ? ((feature['name'] as String?) ?? '')
+        : feature.toString();
+    final String? imageUrl =
+        feature is Map ? (feature['imageUrl'] as String?) : null;
+    final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
     return SizedBox(
       width: 100,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.textWhite.withOpacity(0.5)),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.check_circle,
-                color: AppColors.orange, size: 28),
+            child: hasImage
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                          Icons.check_circle,
+                          color: AppColors.orange,
+                          size: 28),
+                    ),
+                  )
+                : const Center(
+                    child: Icon(Icons.check_circle,
+                        color: AppColors.orange, size: 28)),
           ),
           const SizedBox(height: 6),
           Text(

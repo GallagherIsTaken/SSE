@@ -48,6 +48,9 @@ class ProjectModel {
   // Unit Types
   final List<UnitTypeModel> unitTypes;
 
+  // Site Map Image
+  final String? sitemapUrl;
+
   ProjectModel({
     required this.id,
     required this.name,
@@ -79,6 +82,7 @@ class ProjectModel {
     this.brochureUrl,
     this.nearbyLocations = const [],
     this.unitTypes = const [],
+    this.sitemapUrl,
   });
 
   /// Create a copy with updated fields
@@ -113,6 +117,7 @@ class ProjectModel {
     String? brochureUrl,
     List<NearbyLocationModel>? nearbyLocations,
     List<UnitTypeModel>? unitTypes,
+    String? sitemapUrl,
   }) {
     return ProjectModel(
       id: id ?? this.id,
@@ -145,6 +150,7 @@ class ProjectModel {
       brochureUrl: brochureUrl ?? this.brochureUrl,
       nearbyLocations: nearbyLocations ?? this.nearbyLocations,
       unitTypes: unitTypes ?? this.unitTypes,
+      sitemapUrl: sitemapUrl ?? this.sitemapUrl,
     );
   }
 
@@ -181,6 +187,7 @@ class ProjectModel {
       'brochureUrl': brochureUrl,
       'nearbyLocations': nearbyLocations.map((e) => e.toJson()).toList(),
       'unitTypes': unitTypes.map((e) => e.toJson()).toList(),
+      'sitemapUrl': sitemapUrl,
     };
   }
 
@@ -198,7 +205,13 @@ class ProjectModel {
       isFeatured: json['isFeatured'] as bool? ?? false,
       status: json['status'] as String? ?? 'On Going Project',
       features: (json['features'] as List<dynamic>?)
-              ?.map((e) => e as String)
+              ?.map((e) {
+                // Support both old String format and new {name, imageUrl} Map format
+                if (e is String) return e;
+                if (e is Map) return (e['name'] as String?) ?? '';
+                return '';
+              })
+              .where((e) => e.isNotEmpty)
               .toList() ??
           [],
       priceMin: (json['priceMin'] as num?)?.toDouble(),
@@ -234,6 +247,7 @@ class ProjectModel {
               .map((e) => UnitTypeModel.fromJson(e as Map<String, dynamic>))
               .toList()
           : [],
+      sitemapUrl: json['sitemapUrl'] as String?,
     );
   }
 }
