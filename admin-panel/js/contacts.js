@@ -1,13 +1,75 @@
 import { db } from './firebase-config.js';
 import {
   collection, doc, setDoc, deleteDoc, onSnapshot,
-  orderBy, query
+  orderBy, query, getDoc
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { showToast } from './ui-helpers.js';
 
 const COL = 'contacts';
+const SETTINGS_DOC = 'settings/app_settings';
 let _contacts = [];
 let _editingId = null;
+
+// ── Office Location ──────────────────────────────────────
+let _officeMap = null;
+let _officeMarker = null;
+
+function initOfficeMap() {
+  if (_officeMap || typeof L === 'undefined') return;
+  const container = document.getElementById('office-map-preview');
+  if (!container) return;
+  _officeMap = L.map(container, { zoomControl: true }).setView([-5.147665, 119.432732], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(_officeMap);
+}
+
+function updateOfficeMapMarker() {
+  const lat = parseFloat(document.getElementById('office-lat')?.value);
+  const lng = parseFloat(document.getElementById('office-lng')?.value);
+  if (isNaN(lat) || isNaN(lng)) return;
+  if (!_officeMap) initOfficeMap();
+  if (_officeMarker) _officeMarker.remove();
+  _officeMarker = L.marker([lat, lng]).addTo(_officeMap);
+  _officeMap.setView([lat, lng], 15);
+}
+
+async function loadOfficeLocation() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'app_settings'));
+    if (snap.exists()) {
+      const d = snap.data();
+      const lat = d.officeLatitude ?? '';
+      const lng = d.officeLongitude ?? '';
+      const latEl = document.getElementById('office-lat');
+      const lngEl = document.getElementById('office-lng');
+      if (latEl) latEl.value = lat;
+      if (lngEl) lngEl.value = lng;
+      if (lat && lng) setTimeout(updateOfficeMapMarker, 100);
+    }
+  } catch (e) {
+    console.warn('Could not load office location:', e);
+  }
+}
+
+async function saveOfficeLocation() {
+  const lat = parseFloat(document.getElementById('office-lat')?.value);
+  const lng = parseFloat(document.getElementById('office-lng')?.value);
+  if (isNaN(lat) || isNaN(lng)) {
+    showToast('Please enter valid latitude and longitude', 'error'); return;
+  }
+  const btn = document.getElementById('btn-save-office-location');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    await setDoc(doc(db, 'settings', 'app_settings'),
+      { officeLatitude: lat, officeLongitude: lng }, { merge: true });
+    showToast('Office location saved!', 'success');
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Location'; }
+  }
+}
 
 const modal = document.getElementById('contact-modal');
 
@@ -17,6 +79,12 @@ export function initContacts() {
   document.getElementById('contact-cancel').addEventListener('click', closeModal);
   document.getElementById('contact-save').addEventListener('click', saveContact);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  // Office location
+  document.getElementById('office-lat')?.addEventListener('input', updateOfficeMapMarker);
+  document.getElementById('office-lng')?.addEventListener('input', updateOfficeMapMarker);
+  document.getElementById('btn-save-office-location')?.addEventListener('click', saveOfficeLocation);
+  setTimeout(() => { initOfficeMap(); loadOfficeLocation(); }, 300);
 
   const q = query(collection(db, COL), orderBy('order'));
   onSnapshot(q, (snap) => {

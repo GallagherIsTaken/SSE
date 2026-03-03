@@ -274,6 +274,38 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Office Location Card -->
+                    <div class="table-card" style="margin-top:20px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                            <div>
+                                <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--green-800)">📍 Office
+                                    Location</h3>
+                                <p style="margin:4px 0 0;font-size:12px;color:#6b7280">Set the office coordinates shown
+                                    on the Contact map in the app.</p>
+                            </div>
+                            <button class="btn btn-add" id="btn-save-office-location">Save Location</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                            <div>
+                                <label
+                                    style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Latitude</label>
+                                <input type="number" step="any" id="office-lat" placeholder="e.g. -5.147665"
+                                    style="width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit">
+                            </div>
+                            <div>
+                                <label
+                                    style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Longitude</label>
+                                <input type="number" step="any" id="office-lng" placeholder="e.g. 119.432732"
+                                    style="width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit">
+                            </div>
+                        </div>
+                        <div id="office-map-preview"
+                            style="width:100%;height:260px;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden;background:#f3f4f6">
+                        </div>
+                        <p style="font-size:11px;color:#9ca3af;margin-top:6px">💡 Tip: right-click any point on Google
+                            Maps → "What's here?" to get the coordinates.</p>
+                    </div>
                 </section>
 
             </main>

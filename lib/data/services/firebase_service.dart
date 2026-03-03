@@ -251,4 +251,41 @@ class FirebaseService {
       rethrow;
     }
   }
+
+  // ── App Settings (office location, etc.) ─────────────────
+  static const String _settingsCollection = 'settings';
+  static const String _settingsDocId = 'app_settings';
+
+  /// Get office location from settings
+  Future<Map<String, double?>> getOfficeLocation() async {
+    try {
+      final doc = await _firestore
+          .collection(_settingsCollection)
+          .doc(_settingsDocId)
+          .get();
+      if (!doc.exists) return {'lat': null, 'lng': null};
+      final data = doc.data()!;
+      double? _safeDouble(dynamic v) {
+        if (v == null) return null;
+        if (v is num) return v.toDouble();
+        if (v is String) return double.tryParse(v);
+        return null;
+      }
+
+      return {
+        'lat': _safeDouble(data['officeLatitude']),
+        'lng': _safeDouble(data['officeLongitude']),
+      };
+    } catch (e) {
+      print('Error fetching office location: $e');
+      return {'lat': null, 'lng': null};
+    }
+  }
+
+  /// Save office location to settings
+  Future<void> saveOfficeLocation(double lat, double lng) async {
+    await _firestore.collection(_settingsCollection).doc(_settingsDocId).set(
+        {'officeLatitude': lat, 'officeLongitude': lng},
+        SetOptions(merge: true));
+  }
 }

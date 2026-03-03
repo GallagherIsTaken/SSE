@@ -45,3 +45,11 @@ app.*.map.json
 
 # Environment variables
 .env
+
+# Android signing secrets — never commit these!
+*.jks
+*.keystore
+android/key.properties
+
+# Windows reserved device name accidentally created by shell redirection
+nul

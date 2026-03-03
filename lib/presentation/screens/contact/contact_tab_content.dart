@@ -6,6 +6,8 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../data/repositories/project_repository.dart';
 import '../../../data/models/contact_model.dart';
+import '../../../data/services/firebase_service.dart';
+import '../../widgets/common/project_location_map.dart';
 
 /// Contact tab body: Marketing list, office info, map.
 class ContactTabContent extends StatefulWidget {
@@ -17,8 +19,11 @@ class ContactTabContent extends StatefulWidget {
 
 class _ContactTabContentState extends State<ContactTabContent> {
   final _repository = ProjectRepository();
+  final _firebaseService = FirebaseService();
   List<ContactModel> _contacts = [];
   bool _isLoading = true;
+  double? _officeLat;
+  double? _officeLng;
 
   @override
   void initState() {
@@ -29,9 +34,16 @@ class _ContactTabContentState extends State<ContactTabContent> {
   Future<void> _loadContacts() async {
     setState(() => _isLoading = true);
     try {
-      final contacts = await _repository.getContacts();
+      final results = await Future.wait([
+        _repository.getContacts(),
+        _firebaseService.getOfficeLocation(),
+      ]);
+      final contacts = results[0] as List<ContactModel>;
+      final location = results[1] as Map<String, double?>;
       setState(() {
         _contacts = contacts;
+        _officeLat = location['lat'];
+        _officeLng = location['lng'];
         _isLoading = false;
       });
     } catch (e) {
@@ -123,7 +135,7 @@ class _ContactTabContentState extends State<ContactTabContent> {
                 const SizedBox(height: 8),
                 _buildInstagram(),
                 const SizedBox(height: 16),
-                _buildMapPlaceholder(),
+                _buildOfficeMap(),
                 const SizedBox(height: 24),
               ],
             ),
@@ -286,7 +298,16 @@ class _ContactTabContentState extends State<ContactTabContent> {
     );
   }
 
-  Widget _buildMapPlaceholder() {
+  Widget _buildOfficeMap() {
+    if (_officeLat != null && _officeLng != null) {
+      return ProjectLocationMap(
+        latitude: _officeLat!,
+        longitude: _officeLng!,
+        projectName: 'Kantor Sumber Sentuhan Emas',
+        height: 200,
+      );
+    }
+    // Fallback placeholder
     return Container(
       height: 200,
       decoration: BoxDecoration(

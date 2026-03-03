@@ -1,4 +1,4 @@
-package com.example.sumber_sinar_emas
+package id.sumbersentuhanemas.app
 
 import io.flutter.embedding.android.FlutterActivity
 
